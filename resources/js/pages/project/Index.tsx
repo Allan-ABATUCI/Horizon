@@ -21,8 +21,10 @@ export default function Index({projects}){
         <>
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Projects" />
-            <pre>{JSON.stringify(projects.data)}</pre>
-            <p>{typeof(projects)}</p>
+            <div className="container mx-auto py-10">
+                <DataTable columns={columns} data={projects.data} />
+            </div>
+            
         </AppLayout>
         </>
     )

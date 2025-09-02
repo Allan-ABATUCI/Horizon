@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { type Project } from "@/types";
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal } from "lucide-react"
+import { Clock, MoreHorizontal } from "lucide-react"
 
 import {
   DropdownMenu,
@@ -15,40 +15,45 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export const columns: ColumnDef<Project>[] = [
-    {
+ 
+ {
     accessorKey: "name",
-     header: () => <div className="text-right">Nom</div>,
-     cell: ({ row }) => {
-      const nom = parseFloat(row.getValue("name"))
-      
-      return <div className="text-right font-medium">{nom}</div>
-    },
+    header: () => <div className="max-w-xs text-accent-foreground">Nom</div>,
   },
-  {
+   {
     accessorKey: "description",
-    header: () => <div className="text-right">Nom</div>,
+    header: () => <div className="max-w-xs text-accent-foreground">Description</div>,
     cell: ({ row }) => {
-      const desc = parseFloat(row.getValue("description"))
-      
-      return <div className="text-right font-medium">{desc}</div>
+      const description = row.getValue("description") as string
+      return <div className="max-w-xl">{description}</div>
     },
   },
   {
     accessorKey: "status",
-    header: () => <div className="text-right">Nom</div>,
+    header: () => <div className="max-w-xs text-accent-foreground">Status</div>,
     cell: ({ row }) => {
-      const status = parseFloat(row.getValue("status"))
-      
-      return <div className="text-right font-medium">{status}</div>
+      const status = row.getValue("status") as string
+      const statusMap: Record<string, string> = {
+        pending: "En attente",
+        inprogress: "En cours",
+        completed: "Terminé"
+      }
+      return (
+        <>
+         <Clock/> {status}
+        </>
+        
+
+      ) 
     },
   },
   {
     accessorKey: "end_date",
-    header: () => <div className="text-right">Nom</div>,
+    header: () => <div className="max-w-xs text-accent-foreground">Date de fin</div>,
     cell: ({ row }) => {
       const end_date = parseFloat(row.getValue("end_date"))
       
-      return <div className="text-right font-medium">{end_date}</div>
+      return <div className="font-medium">{end_date}</div>
     },
   },
   {
