@@ -1,7 +1,8 @@
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { Project, type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-
+import { columns } from '@/pages/project/columns';
+import { DataTable } from '@/components/ui/data-table';
 
 export default function Index({projects}){
    
@@ -20,7 +21,8 @@ export default function Index({projects}){
         <>
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Projects" />
-            <DataTable columns={columns} data={data} />
+            <pre>{JSON.stringify(projects.data)}</pre>
+            <p>{typeof(projects)}</p>
         </AppLayout>
         </>
     )
