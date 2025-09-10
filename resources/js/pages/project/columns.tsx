@@ -3,7 +3,8 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { type Project } from "@/types";
 import { Button } from "@/components/ui/button"
-import { Clock, MoreHorizontal } from "lucide-react"
+import { CircleCheckBig, Clock, Hourglass, MoreHorizontal } from "lucide-react"
+
 
 import {
   DropdownMenu,
@@ -14,8 +15,26 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+function renderSwitch(status:string) {
+  switch(status) {
+    case "en attente":
+      return <Hourglass/>;
+    case "en cours":
+      return <Clock/>;
+    case "terminé":
+      return <CircleCheckBig />;
+  }
+}
 export const columns: ColumnDef<Project>[] = [
- 
+ {
+    accessorKey: "image_path",
+    header: () => <div className="max-w-xs text-accent-foreground"></div>,
+    cell: ({ row }) => {
+      const image = row.getValue("image_path") as string
+    return <img src={image} />
+    }
+      
+  },
  {
     accessorKey: "name",
     header: () => <div className="max-w-xs text-accent-foreground">Nom</div>,
@@ -33,14 +52,9 @@ export const columns: ColumnDef<Project>[] = [
     header: () => <div className="max-w-xs text-accent-foreground">Status</div>,
     cell: ({ row }) => {
       const status = row.getValue("status") as string
-      const statusMap: Record<string, string> = {
-        pending: "En attente",
-        inprogress: "En cours",
-        completed: "Terminé"
-      }
       return (
         <>
-         <Clock/> {status}
+         <div className="flex whitespace-nowrap">{renderSwitch(status)} {status}</div>
         </>
         
 
@@ -51,7 +65,7 @@ export const columns: ColumnDef<Project>[] = [
     accessorKey: "end_date",
     header: () => <div className="max-w-xs text-accent-foreground">Date de fin</div>,
     cell: ({ row }) => {
-      const end_date = parseFloat(row.getValue("end_date"))
+      const end_date = row.getValue("end_date") as string
       
       return <div className="font-medium">{end_date}</div>
     },
