@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
+/**  @return composant de l'icone pour l'affichage du status */
 function renderSwitch(status:string) {
   switch(status) {
     case "en attente":
@@ -54,10 +54,9 @@ export const columns: ColumnDef<Project>[] = [
       const status = row.getValue("status") as string
       return (
         <>
-         <div className="flex whitespace-nowrap">{renderSwitch(status)} {status}</div>
+         <div className="flex whitespace-nowrap">{renderSwitch(status)}  
+          <p className="pl-1.5">{status}</p></div>
         </>
-        
-
       ) 
     },
   },
@@ -93,7 +92,6 @@ export const columns: ColumnDef<Project>[] = [
             <DropdownMenuSeparator />
             <DropdownMenuItem>Voir tâches</DropdownMenuItem>
             <DropdownMenuItem>Modifier Projet</DropdownMenuItem>
-
           </DropdownMenuContent>
         </DropdownMenu>
       )
