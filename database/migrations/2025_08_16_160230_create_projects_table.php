@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->longtext("description")->nullable();
-            $table->timsastamp('end_date')->nullable();
+            $table->timestamp('end_date')->nullable();
             $table->string('satus');
             $table->string('image_path')->nullable();
-            $table->forgeignId('created_by')->constrained('users');
+            $table->foreignId('created_by')->constrained('users');
             $table->foreignId('updated_by')->constrained('users');
             $table->timestamps();
         });

@@ -8,7 +8,7 @@ Une application web complète qui simplifie la gestion de projets pour les équi
 ### Stack technique
 **Backend** : Laravel avec Inertia.js  
 **Frontend** : React  
-**Base de données** : MongoDB   
+**Base de données** : sqlite  
 
 ---
 
