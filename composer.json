@@ -13,7 +13,6 @@
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^12.52",
         "laravel/tinker": "^2.11",
-        "mongodb/laravel-mongodb": "^5.6",
         "mongodb/mongodb": "^2.1",
         "mongodb/mongodb-extension": "^1.2",
         "tightenco/ziggy": "^2.6"

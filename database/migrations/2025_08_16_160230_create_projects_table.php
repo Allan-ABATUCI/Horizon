@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->longtext("description")->nullable();
             $table->timestamp('end_date')->nullable();
-            $table->string('satus');
+            $table->string('status');
             $table->string('image_path')->nullable();
             $table->foreignId('created_by')->constrained('users');
             $table->foreignId('updated_by')->constrained('users');
