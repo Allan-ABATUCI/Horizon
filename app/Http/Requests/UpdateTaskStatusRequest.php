@@ -2,32 +2,29 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Project;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreProjectRequest extends FormRequest
+class UpdateTaskStatusRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return $this->user()?->can('create', Project::class) ?? false;
+        return $this->user()?->can('update', $this->route('task')) ?? false;
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Utilisé par le Kanban (drag-and-drop) : seul le statut change, pour le
+     * créateur comme pour l'assigné — contrairement à UpdateTaskRequest qui
+     * exige tous les champs pour le créateur.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'end_date' => ['nullable', 'date'],
             'status' => ['required', 'in:en attente,en cours,terminé'],
-            'image' => ['nullable', 'image', 'max:2048'],
         ];
     }
 }

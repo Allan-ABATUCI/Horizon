@@ -2,17 +2,18 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Project;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
-class StoreProjectRequest extends FormRequest
+class UpdateUserRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return $this->user()?->can('create', Project::class) ?? false;
+        return $this->user()?->can('update', $this->route('user')) ?? false;
     }
 
     /**
@@ -24,10 +25,8 @@ class StoreProjectRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'end_date' => ['nullable', 'date'],
-            'status' => ['required', 'in:en attente,en cours,terminé'],
-            'image' => ['nullable', 'image', 'max:2048'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->route('user'))],
+            'password' => ['nullable', 'confirmed', Password::defaults()],
         ];
     }
 }

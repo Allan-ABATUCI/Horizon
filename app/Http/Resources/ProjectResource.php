@@ -23,8 +23,8 @@ class ProjectResource extends JsonResource
             "updated_at"=> $this->updated_at? $this->updated_at->format("Y-m-d") : null,
             "end_date"=> $this->end_date ? $this->end_date->format("Y-m-d") : null,
             "image_path"=> $this->image_path,
-            "created_by"=> new UserResource($this->created_by),
-            "updated_by"=> new UserResource($this->updated_by),
+            "created_by"=> new UserResource($this->creator),
+            "updated_by"=> new UserResource($this->editor),
             "status"=> $this->status
         ];
     }

@@ -1,21 +1,18 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-
-Route::get('/welcome', function () {
-    return Inertia::render('welcome');
-})->name('home');
 
 Route::redirect('/','/dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', fn()=>Inertia::render(component: 'dashboard'))->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('project',ProjectController::class);
     Route::resource('task', TaskController::class);
+    Route::patch('/task/{task}/status', [TaskController::class, 'updateStatus'])->name('task.updateStatus');
     Route::resource('user', UserController::class);
 });
 
