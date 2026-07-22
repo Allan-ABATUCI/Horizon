@@ -5,47 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Requests\UpdateTaskStatusRequest;
-use App\Http\Resources\TaskResource;
-use App\Models\Project;
 use App\Models\Task;
-use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Inertia\Inertia;
 
 class TaskController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request)
-    {
-        $this->authorize('viewAny', Task::class);
-
-        $tasks = Task::query()
-            ->with(['project', 'assignedUser', 'creator', 'editor'])
-            ->when($request->filled('project_id'), fn ($q) => $q->where('project_id', $request->integer('project_id')))
-            ->paginate(10)
-            ->onEachSide(1);
-
-        return Inertia::render('task/Index', [
-            'tasks' => TaskResource::collection($tasks),
-            'projectId' => $request->integer('project_id') ?: null,
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
-        ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * Non utilisée : la création se fait via une modale sur task/Index.
-     */
-    public function create()
-    {
-        return redirect()->route('task.index');
-    }
-
     /**
      * Store a newly created resource in storage.
      */
@@ -63,31 +27,7 @@ class TaskController extends Controller
 
         Task::create($validated);
 
-        return redirect()->route('task.index')->with('success', 'Tâche créée.');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * Non utilisée : pas de page dédiée, tout se fait depuis task/Index.
-     */
-    public function show(Task $task)
-    {
-        $this->authorize('view', $task);
-
-        return redirect()->route('task.index');
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * Non utilisée : l'édition se fait via une modale sur task/Index.
-     */
-    public function edit(Task $task)
-    {
-        $this->authorize('update', $task);
-
-        return redirect()->route('task.index');
+        return redirect()->route('dashboard')->with('success', 'Tâche créée.');
     }
 
     /**
@@ -106,7 +46,7 @@ class TaskController extends Controller
 
         $task->update($data);
 
-        return redirect()->route('task.index')->with('success', 'Tâche modifiée.');
+        return redirect()->route('dashboard')->with('success', 'Tâche modifiée.');
     }
 
     /**
@@ -135,6 +75,6 @@ class TaskController extends Controller
 
         $task->delete();
 
-        return redirect()->route('task.index')->with('success', 'Tâche supprimée.');
+        return redirect()->route('dashboard')->with('success', 'Tâche supprimée.');
     }
 }

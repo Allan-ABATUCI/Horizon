@@ -102,7 +102,7 @@ export function getProjectColumns({
                                 copier l'ID du projet
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => router.visit(route('task.index', { project_id: project.id }))}>
+                            <DropdownMenuItem onClick={() => router.visit(route('dashboard', { project_id: project.id, scope: 'all' }))}>
                                 Voir tâches
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => onEdit(project)}>Modifier Projet</DropdownMenuItem>

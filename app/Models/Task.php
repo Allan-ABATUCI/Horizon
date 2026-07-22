@@ -16,6 +16,7 @@ class Task extends Model
         'image_path',
         'status',
         'priority',
+        'start_date',
         'end_date',
         'assigned_user_id',
         'created_by',
@@ -26,6 +27,7 @@ class Task extends Model
     protected function casts(): array
     {
         return [
+            'start_date' => 'datetime',
             'end_date' => 'datetime',
         ];
     }

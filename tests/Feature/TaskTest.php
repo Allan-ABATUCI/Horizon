@@ -14,7 +14,7 @@ class TaskTest extends TestCase
 
     public function test_guests_are_redirected_to_the_login_page()
     {
-        $this->get('/task')->assertRedirect('/login');
+        $this->post('/task', [])->assertRedirect('/login');
     }
 
     public function test_creator_can_fully_update_their_task()
@@ -37,7 +37,7 @@ class TaskTest extends TestCase
             'priority' => 'haute',
             'assigned_user_id' => $assignee->id,
             'project_id' => $project->id,
-        ])->assertRedirect(route('task.index'));
+        ])->assertRedirect(route('dashboard'));
 
         $this->assertDatabaseHas('tasks', ['id' => $task->id, 'name' => 'Nouveau nom', 'priority' => 'haute']);
     }
@@ -60,7 +60,7 @@ class TaskTest extends TestCase
             'name' => 'Tentative de changement de nom',
             'priority' => 'haute',
             'status' => 'terminé',
-        ])->assertRedirect(route('task.index'));
+        ])->assertRedirect(route('dashboard'));
 
         $this->assertDatabaseHas('tasks', [
             'id' => $task->id,

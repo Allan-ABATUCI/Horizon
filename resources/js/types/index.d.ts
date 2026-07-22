@@ -70,6 +70,7 @@ export interface Task {
     image_path: string | null;
     status: 'en attente' | 'en cours' | 'terminé';
     priority: 'basse' | 'moyenne' | 'haute';
+    start_date: string | null;
     end_date: string | null;
     project_id: number;
     project?: Project;

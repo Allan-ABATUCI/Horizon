@@ -3,30 +3,57 @@ import { router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
 import { TaskKanbanCard } from '@/components/kanban/task-kanban-card';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { renderStatusIcon, TASK_STATUSES, type TaskStatus } from '@/lib/task-presentation';
 import { type Task } from '@/types';
 
-function KanbanColumn({ status, tasks }: { status: TaskStatus; tasks: Task[] }) {
+function KanbanColumn({
+    status,
+    tasks,
+    currentUserId,
+    onEdit,
+    onDelete,
+}: {
+    status: TaskStatus;
+    tasks: Task[];
+    currentUserId: number;
+    onEdit: (task: Task) => void;
+    onDelete: (task: Task) => void;
+}) {
     const { setNodeRef, isOver } = useDroppable({ id: status });
     const Icon = renderStatusIcon(status);
 
     return (
         <div ref={setNodeRef} className={`flex w-full flex-col gap-2 rounded-lg border bg-muted/30 p-3 sm:w-1/3 ${isOver ? 'bg-muted' : ''}`}>
             <div className="flex items-center gap-1.5 px-1 text-sm font-medium">
-                {Icon && <Icon className="size-4" />}
-                <span>{status}</span>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span className="flex items-center">{Icon && <Icon className="size-4" />}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>{status}</TooltipContent>
+                </Tooltip>
                 <span className="ml-auto text-xs text-muted-foreground">{tasks.length}</span>
             </div>
             <div className="flex min-h-16 flex-col gap-2">
                 {tasks.map((task) => (
-                    <TaskKanbanCard key={task.id} task={task} />
+                    <TaskKanbanCard key={task.id} task={task} canDelete={task.created_by.id === currentUserId} onEdit={onEdit} onDelete={onDelete} />
                 ))}
             </div>
         </div>
     );
 }
 
-export function TaskKanbanBoard({ tasks: initialTasks }: { tasks: Task[] }) {
+export function TaskKanbanBoard({
+    tasks: initialTasks,
+    currentUserId,
+    onEdit,
+    onDelete,
+}: {
+    tasks: Task[];
+    currentUserId: number;
+    onEdit: (task: Task) => void;
+    onDelete: (task: Task) => void;
+}) {
     const [tasks, setTasks] = useState(initialTasks);
 
     useEffect(() => {
@@ -63,7 +90,14 @@ export function TaskKanbanBoard({ tasks: initialTasks }: { tasks: Task[] }) {
         <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
             <div className="flex flex-col gap-4 sm:flex-row">
                 {TASK_STATUSES.map((status) => (
-                    <KanbanColumn key={status} status={status} tasks={tasks.filter((t) => t.status === status)} />
+                    <KanbanColumn
+                        key={status}
+                        status={status}
+                        tasks={tasks.filter((t) => t.status === status)}
+                        currentUserId={currentUserId}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                    />
                 ))}
             </div>
         </DndContext>
