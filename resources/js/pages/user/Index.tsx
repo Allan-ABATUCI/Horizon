@@ -12,6 +12,7 @@ export default function Index({ users }: { users: PaginatedResponse<User> }) {
     const { auth } = usePage<SharedData>().props;
     const [createOpen, setCreateOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
+    const [editOpen, setEditOpen] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Tableau de bord', href: '/dashboard' },
@@ -20,7 +21,10 @@ export default function Index({ users }: { users: PaginatedResponse<User> }) {
 
     const columns = getUserColumns({
         currentUserId: auth.user.id,
-        onEdit: (user) => setEditingUser(user),
+        onEdit: (user) => {
+            setEditingUser(user);
+            setEditOpen(true);
+        },
         onDelete: (user) => router.delete(route('user.destroy', user.id), { preserveScroll: true }),
     });
 
@@ -36,12 +40,7 @@ export default function Index({ users }: { users: PaginatedResponse<User> }) {
             </div>
 
             <UserFormDialog mode="create" open={createOpen} onOpenChange={setCreateOpen} />
-            <UserFormDialog
-                mode="edit"
-                user={editingUser ?? undefined}
-                open={editingUser !== null}
-                onOpenChange={(open) => !open && setEditingUser(null)}
-            />
+            <UserFormDialog mode="edit" user={editingUser ?? undefined} open={editOpen} onOpenChange={setEditOpen} />
         </AppLayout>
     );
 }

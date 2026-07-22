@@ -11,6 +11,7 @@ import { useState } from 'react';
 export default function Index({ projects }: { projects: PaginatedResponse<Project> }) {
     const [createOpen, setCreateOpen] = useState(false);
     const [editingProject, setEditingProject] = useState<Project | null>(null);
+    const [editOpen, setEditOpen] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Tableau de bord', href: '/dashboard' },
@@ -18,7 +19,10 @@ export default function Index({ projects }: { projects: PaginatedResponse<Projec
     ];
 
     const columns = getProjectColumns({
-        onEdit: (project) => setEditingProject(project),
+        onEdit: (project) => {
+            setEditingProject(project);
+            setEditOpen(true);
+        },
         onDelete: (project) => router.delete(route('project.destroy', project.id), { preserveScroll: true }),
     });
 
@@ -34,12 +38,7 @@ export default function Index({ projects }: { projects: PaginatedResponse<Projec
             </div>
 
             <ProjectFormDialog mode="create" open={createOpen} onOpenChange={setCreateOpen} />
-            <ProjectFormDialog
-                mode="edit"
-                project={editingProject ?? undefined}
-                open={editingProject !== null}
-                onOpenChange={(open) => !open && setEditingProject(null)}
-            />
+            <ProjectFormDialog mode="edit" project={editingProject ?? undefined} open={editOpen} onOpenChange={setEditOpen} />
         </AppLayout>
     );
 }

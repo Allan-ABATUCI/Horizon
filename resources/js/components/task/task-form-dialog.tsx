@@ -54,22 +54,23 @@ export function TaskFormDialog({
         image: null,
     });
 
+    // Ne réinitialise le formulaire que lorsqu'on édite une tâche différente
+    // (pas à chaque ouverture/fermeture) — un clic à l'extérieur ou Échap ne
+    // doit pas faire perdre ce qui a été saisi.
     useEffect(() => {
-        if (open) {
-            setData({
-                name: task?.name ?? '',
-                description: task?.description ?? '',
-                status: task?.status ?? 'en attente',
-                priority: task?.priority ?? 'moyenne',
-                end_date: task?.end_date ?? '',
-                assigned_user_id: task?.assigned_user.id ? String(task.assigned_user.id) : '',
-                project_id: task?.project_id ? String(task.project_id) : lockedProjectId ? String(lockedProjectId) : '',
-                image: null,
-            });
-            clearErrors();
-        }
+        setData({
+            name: task?.name ?? '',
+            description: task?.description ?? '',
+            status: task?.status ?? 'en attente',
+            priority: task?.priority ?? 'moyenne',
+            end_date: task?.end_date ?? '',
+            assigned_user_id: task?.assigned_user.id ? String(task.assigned_user.id) : '',
+            project_id: task?.project_id ? String(task.project_id) : lockedProjectId ? String(lockedProjectId) : '',
+            image: null,
+        });
+        clearErrors();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open, task]);
+    }, [task?.id]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -77,7 +78,9 @@ export function TaskFormDialog({
         const options = {
             preserveScroll: true,
             onSuccess: () => {
-                reset();
+                if (mode === 'create') {
+                    reset();
+                }
                 onOpenChange(false);
             },
         };

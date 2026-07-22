@@ -39,19 +39,20 @@ export function ProjectFormDialog({
         image: null,
     });
 
+    // Ne réinitialise le formulaire que lorsqu'on édite une entité différente
+    // (pas à chaque ouverture/fermeture) — un clic à l'extérieur ou Échap ne
+    // doit pas faire perdre ce qui a été saisi.
     useEffect(() => {
-        if (open) {
-            setData({
-                name: project?.name ?? '',
-                description: project?.description ?? '',
-                end_date: project?.end_date ?? '',
-                status: project?.status ?? 'en attente',
-                image: null,
-            });
-            clearErrors();
-        }
+        setData({
+            name: project?.name ?? '',
+            description: project?.description ?? '',
+            end_date: project?.end_date ?? '',
+            status: project?.status ?? 'en attente',
+            image: null,
+        });
+        clearErrors();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open, project]);
+    }, [project?.id]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -59,7 +60,9 @@ export function ProjectFormDialog({
         const options = {
             preserveScroll: true,
             onSuccess: () => {
-                reset();
+                if (mode === 'create') {
+                    reset();
+                }
                 onOpenChange(false);
             },
         };

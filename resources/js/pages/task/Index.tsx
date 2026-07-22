@@ -24,6 +24,7 @@ export default function Index({
     const { auth } = usePage<SharedData>().props;
     const [createOpen, setCreateOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<Task | null>(null);
+    const [editOpen, setEditOpen] = useState(false);
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Tableau de bord', href: '/dashboard' },
@@ -34,7 +35,10 @@ export default function Index({
     const canEditAllFields = (task: Task | null) => !task || task.created_by.id === auth.user.id;
 
     const columns = getTaskColumns({
-        onEdit: (task) => setEditingTask(task),
+        onEdit: (task) => {
+            setEditingTask(task);
+            setEditOpen(true);
+        },
         onDelete: (task) => router.delete(route('task.destroy', task.id), { preserveScroll: true }),
         canDelete,
     });
@@ -61,8 +65,8 @@ export default function Index({
             <TaskFormDialog
                 mode="edit"
                 task={editingTask ?? undefined}
-                open={editingTask !== null}
-                onOpenChange={(open) => !open && setEditingTask(null)}
+                open={editOpen}
+                onOpenChange={setEditOpen}
                 projects={projects}
                 users={users}
                 canEditAllFields={canEditAllFields(editingTask)}

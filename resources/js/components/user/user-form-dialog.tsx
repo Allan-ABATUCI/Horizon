@@ -33,18 +33,19 @@ export function UserFormDialog({
         password_confirmation: '',
     });
 
+    // Ne réinitialise le formulaire que lorsqu'on édite un utilisateur différent
+    // (pas à chaque ouverture/fermeture) — un clic à l'extérieur ou Échap ne
+    // doit pas faire perdre ce qui a été saisi.
     useEffect(() => {
-        if (open) {
-            setData({
-                name: user?.name ?? '',
-                email: user?.email ?? '',
-                password: '',
-                password_confirmation: '',
-            });
-            clearErrors();
-        }
+        setData({
+            name: user?.name ?? '',
+            email: user?.email ?? '',
+            password: '',
+            password_confirmation: '',
+        });
+        clearErrors();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open, user]);
+    }, [user?.id]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -52,7 +53,9 @@ export function UserFormDialog({
         const options = {
             preserveScroll: true,
             onSuccess: () => {
-                reset();
+                if (mode === 'create') {
+                    reset();
+                }
                 onOpenChange(false);
             },
         };
