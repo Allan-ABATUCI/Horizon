@@ -20,15 +20,15 @@ class ProjectFactory extends Factory
         $userId = fn () => User::inRandomOrder()->value('id') ?? 1;
 
         return [
-            "name"=> fake()->sentence(),
-            "description"=> fake()->realText(),
-            "end_date"=> fake()->dateTimeBetween("now","+1 year"),
-            "status"=> fake()->randomElement(["en attente","en cours","terminé"]),
-            "image_path"=> fake()->imageUrl(),
-            "created_by"=> $userId(),
-            "updated_by"=> $userId(),
-            "updated_at"=> now(),
-            "created_at"=> now(),
+            'name' => fake()->sentence(),
+            'description' => fake()->realText(),
+            'end_date' => fake()->dateTimeBetween('now', '+1 year'),
+            'status' => fake()->randomElement(['en attente', 'en cours', 'terminé']),
+            'image_path' => fake()->imageUrl(),
+            'created_by' => $userId(),
+            'updated_by' => $userId(),
+            'updated_at' => now(),
+            'created_at' => now(),
         ];
     }
 }

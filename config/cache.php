@@ -16,8 +16,7 @@ return [
     */
 
     'default' => env('CACHE_STORE', 'database'),
-    'limiter' => 'database', 
-
+    'limiter' => 'database',
 
     /*
     |--------------------------------------------------------------------------

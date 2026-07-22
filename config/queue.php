@@ -29,22 +29,21 @@ return [
     */
 
     'connections' => [
-        
 
         'sync' => [
             'driver' => 'sync',
         ],
 
         'database' => [
-        'driver' => 'mongodb',
-        // You can also specify your jobs-specific database
-        // in the config/database.php file
-        'connection' => 'mongodb',
-        'table' => 'jobs',
-        'queue' => 'default',
-        // Optional setting
-        // 'retry_after' => 60,
-    ],
+            'driver' => 'mongodb',
+            // You can also specify your jobs-specific database
+            // in the config/database.php file
+            'connection' => 'mongodb',
+            'table' => 'jobs',
+            'queue' => 'default',
+            // Optional setting
+            // 'retry_after' => 60,
+        ],
         'beanstalkd' => [
             'driver' => 'beanstalkd',
             'host' => env('BEANSTALKD_QUEUE_HOST', 'localhost'),
