@@ -12,6 +12,36 @@ Une application web complète qui simplifie la gestion de projets pour les équi
 
 ---
 
+### Installation
+
+```bash
+git clone https://github.com/Allan-ABATUCI/Horizon.git
+cd Horizon
+
+composer install
+npm install
+
+cp .env.example .env
+php artisan key:generate
+
+touch database/database.sqlite
+php artisan migrate --seed
+
+php artisan storage:link
+
+npm run build   # ou `npm run dev` pour le hot-reload en développement
+php artisan serve
+```
+
+L'application est ensuite accessible sur `http://localhost:8000`. Le seeder crée un compte de démonstration (`allan@example.com` / `Laflemme1!`) ainsi que des projets/tâches d'exemple.
+
+**Pour le déploiement** (au-delà du dev local) :
+- Mettre `APP_ENV=production` et `APP_DEBUG=false` dans `.env`.
+- Faire tourner le planificateur pour les rappels d'échéance : `php artisan schedule:work` (process persistant), ou une entrée cron `* * * * * php artisan schedule:run` sur le serveur.
+- `php artisan config:cache` et `php artisan route:cache` après tout changement de configuration.
+
+---
+
 ### Objectifs d'apprentissage
 - Développer une application fullstack avec Laravel et Inertia
 - Approfondir React et les composants modernes
