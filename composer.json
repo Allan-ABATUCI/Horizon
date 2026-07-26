@@ -1,11 +1,11 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/react-starter-kit",
+    "name": "allan-abatuci/horizon",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Application de gestion de projets et de tâches (Kanban, calendrier, frise).",
     "keywords": [
         "laravel",
-        "framework"
+        "gestion-de-projet"
     ],
     "license": "MIT",
     "require": {
