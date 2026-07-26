@@ -165,6 +165,42 @@ class TaskTest extends TestCase
         $this->assertDatabaseHas('tasks', ['id' => $task->id, 'status' => $task->status]);
     }
 
+    public function test_the_project_owner_can_delete_a_task_created_by_another_member()
+    {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $project = Project::factory()->create(['created_by' => $owner->id, 'updated_by' => $owner->id]);
+        $project->members()->attach($member->id);
+        $task = Task::factory()->create([
+            'project_id' => $project->id,
+            'created_by' => $member->id,
+            'updated_by' => $member->id,
+            'assigned_user_id' => $member->id,
+        ]);
+
+        $this->actingAs($owner)->delete("/task/{$task->id}")->assertRedirect(route('dashboard'));
+
+        $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
+    }
+
+    public function test_a_non_owner_member_still_cannot_delete_another_members_task()
+    {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $otherMember = User::factory()->create();
+        $project = Project::factory()->create(['created_by' => $owner->id, 'updated_by' => $owner->id]);
+        $project->members()->attach([$member->id, $otherMember->id]);
+        $task = Task::factory()->create([
+            'project_id' => $project->id,
+            'created_by' => $member->id,
+            'updated_by' => $member->id,
+            'assigned_user_id' => $member->id,
+        ]);
+
+        $this->actingAs($otherMember)->delete("/task/{$task->id}")->assertForbidden();
+        $this->assertDatabaseHas('tasks', ['id' => $task->id]);
+    }
+
     public function test_creating_a_task_with_an_image_stores_it_on_the_public_disk()
     {
         Storage::fake('public');

@@ -111,6 +111,30 @@ class AttachmentTest extends TestCase
         $this->assertDatabaseHas('attachments', ['id' => $attachment->id]);
     }
 
+    public function test_the_project_owner_can_delete_another_members_attachment()
+    {
+        Storage::fake('local');
+
+        $task = $this->makeTask();
+        $owner = $task->creator;
+        $member = User::factory()->create();
+        $task->project->members()->attach($member->id);
+
+        $path = UploadedFile::fake()->create('rapport.pdf', 500, 'application/pdf')->store('attachments', 'local');
+        $attachment = $task->attachments()->create([
+            'user_id' => $member->id,
+            'original_name' => 'rapport.pdf',
+            'path' => $path,
+            'mime_type' => 'application/pdf',
+            'size' => 500 * 1024,
+        ]);
+
+        $this->actingAs($owner)->delete("/attachments/{$attachment->id}")->assertSuccessful();
+
+        $this->assertDatabaseMissing('attachments', ['id' => $attachment->id]);
+        Storage::disk('local')->assertMissing($path);
+    }
+
     public function test_a_disallowed_file_type_is_rejected()
     {
         Storage::fake('local');

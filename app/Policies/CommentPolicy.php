@@ -17,8 +17,12 @@ class CommentPolicy
         return $task->project->members()->where('user_id', $user->id)->exists();
     }
 
+    /**
+     * L'auteur du commentaire, ou le créateur du projet (modération de son
+     * propre projet), peut le supprimer.
+     */
     public function delete(User $user, Comment $comment): bool
     {
-        return $user->id === $comment->user_id;
+        return $user->id === $comment->user_id || $user->id === $comment->task->project->created_by;
     }
 }

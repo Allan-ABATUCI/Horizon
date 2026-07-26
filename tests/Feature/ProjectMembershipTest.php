@@ -115,6 +115,47 @@ class ProjectMembershipTest extends TestCase
         $this->assertTrue($project->members()->where('user_id', $assignee->id)->exists());
     }
 
+    public function test_a_non_owner_member_cannot_assign_a_task_to_a_non_member()
+    {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $stranger = User::factory()->create();
+        $project = Project::factory()->create(['created_by' => $owner->id, 'updated_by' => $owner->id]);
+        $project->members()->attach($member->id);
+
+        $this->actingAs($member)
+            ->post('/task', [
+                'name' => 'Tâche suspecte',
+                'status' => 'en attente',
+                'priority' => 'moyenne',
+                'assigned_user_id' => $stranger->id,
+                'project_id' => $project->id,
+            ], ['Accept' => 'application/json'])
+            ->assertStatus(422);
+
+        $this->assertFalse($project->members()->where('user_id', $stranger->id)->exists());
+        $this->assertDatabaseMissing('tasks', ['name' => 'Tâche suspecte']);
+    }
+
+    public function test_a_non_owner_member_can_assign_a_task_to_an_existing_member()
+    {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $otherMember = User::factory()->create();
+        $project = Project::factory()->create(['created_by' => $owner->id, 'updated_by' => $owner->id]);
+        $project->members()->attach([$member->id, $otherMember->id]);
+
+        $this->actingAs($member)->post('/task', [
+            'name' => 'Tâche légitime',
+            'status' => 'en attente',
+            'priority' => 'moyenne',
+            'assigned_user_id' => $otherMember->id,
+            'project_id' => $project->id,
+        ])->assertRedirect(route('dashboard'));
+
+        $this->assertDatabaseHas('tasks', ['name' => 'Tâche légitime', 'assigned_user_id' => $otherMember->id]);
+    }
+
     public function test_scope_all_shows_tasks_from_a_project_the_user_only_belongs_to()
     {
         $owner = User::factory()->create();

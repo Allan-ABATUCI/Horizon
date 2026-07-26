@@ -82,6 +82,19 @@ class CommentTest extends TestCase
         $this->assertDatabaseHas('comments', ['id' => $comment->id]);
     }
 
+    public function test_the_project_owner_can_delete_another_members_comment()
+    {
+        $task = $this->makeTask();
+        $owner = $task->creator; // makeTask() : le créateur du projet est aussi celui de la tâche
+        $author = User::factory()->create();
+        $task->project->members()->attach($author->id);
+        $comment = Comment::create(['task_id' => $task->id, 'user_id' => $author->id, 'body' => 'À modérer']);
+
+        $this->actingAs($owner)->delete("/comments/{$comment->id}")->assertSuccessful();
+
+        $this->assertDatabaseMissing('comments', ['id' => $comment->id]);
+    }
+
     public function test_deleting_a_task_cascades_to_its_comments()
     {
         $task = $this->makeTask();
