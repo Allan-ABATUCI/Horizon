@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { readXsrfToken } from '@/lib/csrf';
 
 type Attachment = {
     id: number;
@@ -16,11 +17,6 @@ type Attachment = {
         email: string;
     };
 };
-
-function readXsrfToken(): string {
-    const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
-    return match ? decodeURIComponent(match[1]) : '';
-}
 
 function formatSize(bytes: number): string {
     if (bytes < 1024) return `${bytes} o`;
