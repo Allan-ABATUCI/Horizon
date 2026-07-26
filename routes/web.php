@@ -7,6 +7,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskDependencyController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +35,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/task/{task}/attachments', [AttachmentController::class, 'index'])->name('task.attachments.index');
         Route::get('/attachments/{attachment}/download', [AttachmentController::class, 'download'])->name('attachments.download');
         Route::delete('/attachments/{attachment}', [AttachmentController::class, 'destroy'])->name('attachments.destroy');
+        Route::get('/task/{task}/dependencies/candidates', [TaskDependencyController::class, 'candidates'])->name('task.dependencies.candidates');
+        Route::post('/task/{task}/dependencies', [TaskDependencyController::class, 'store'])->name('task.dependencies.store');
+        Route::delete('/task/{task}/dependencies/{dependsOn}', [TaskDependencyController::class, 'destroy'])->name('task.dependencies.destroy');
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');

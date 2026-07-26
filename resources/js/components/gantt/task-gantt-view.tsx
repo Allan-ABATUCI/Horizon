@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Flag, Folder } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Flag, Folder, Link2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -149,10 +149,27 @@ export function TaskGanttView({ tasks, onEdit }: { tasks: Task[]; onEdit: (task:
                                 const { task, clippedStartDay, clippedEndDay } = item;
                                 const zebra = rowIndex % 2 === 1;
                                 rowIndex += 1;
+                                const blockedBy = task.depends_on.filter((d) => d.status !== 'terminé');
 
                                 return (
                                     <div key={task.id} className={cn('flex items-center rounded py-0.5', zebra && 'bg-muted/30')}>
-                                        <div className="w-32 shrink-0 truncate pr-2 text-sm">{task.name}</div>
+                                        <div className="flex w-32 shrink-0 items-center gap-1 pr-2 text-sm">
+                                            <span className="truncate">{task.name}</span>
+                                            {task.depends_on.length > 0 && (
+                                                <span
+                                                    className="shrink-0"
+                                                    title={
+                                                        blockedBy.length > 0
+                                                            ? `Bloquée par : ${blockedBy.map((d) => d.name).join(', ')}`
+                                                            : "Dépend d'autres tâches, toutes terminées"
+                                                    }
+                                                >
+                                                    <Link2
+                                                        className={cn('size-3', blockedBy.length > 0 ? 'text-destructive' : 'text-muted-foreground')}
+                                                    />
+                                                </span>
+                                            )}
+                                        </div>
                                         <div className="grid flex-1" style={{ gridTemplateColumns }}>
                                             {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => (
                                                 <div key={day} className={cn(isWeekend(day) && 'bg-muted/40')} />

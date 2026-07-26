@@ -81,6 +81,14 @@ export interface Task {
     updated_by: UserSummary;
     updated_at: string;
     created_at: string;
+    depends_on: TaskDependencySummary[];
+    blocks: TaskDependencySummary[];
+}
+
+export interface TaskDependencySummary {
+    id: number;
+    name: string;
+    status: 'en attente' | 'en cours' | 'terminé';
 }
 
 export interface PaginationLink {

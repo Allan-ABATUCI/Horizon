@@ -62,6 +62,7 @@ L'application est ensuite accessible sur `http://localhost:8000`. Le seeder cré
 - Recherche plein texte via SQLite FTS5 (classement par pertinence, insensible aux accents), sans dépendance externe
 - Content-Security-Policy avec nonce par requête (scripts Vite/Ziggy), X-Frame-Options, HSTS, redirection HTTPS automatique derrière un reverse proxy — actifs en production, sans impact sur le dev local
 - `composer audit`/`npm audit` en CI pour détecter les dépendances vulnérables à chaque push
+- Dépendances entre tâches : détection de cycles par parcours de graphe (BFS sur la table pivot `task_dependencies`), sans dépendance externe
 
 ---
 
@@ -76,6 +77,7 @@ L'application est ensuite accessible sur `http://localhost:8000`. Le seeder cré
 - Membres par projet : seuls les membres voient et interagissent avec un projet, ses tâches et ses commentaires ; le créateur gère qui rejoint
 - Recherche globale (projets et tâches, raccourci Cmd/Ctrl+K)
 - Pièces jointes multiples sur les tâches (10 max, 2 Mo/fichier, liste blanche de types, stockage privé)
+- Dépendances entre tâches (« bloque » / « est bloqué par »), avec détection des cycles et blocage du passage à « terminé » tant qu'une dépendance ne l'est pas
 
 ### Prochaines étapes
 - Espaces de travail multiples

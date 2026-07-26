@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Rules\AssignableUser;
+use App\Rules\DependenciesResolved;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -31,7 +32,7 @@ class UpdateTaskRequest extends FormRequest
             return [
                 'name' => ['required', 'string', 'max:255'],
                 'description' => ['nullable', 'string', 'max:10000'],
-                'status' => ['required', 'in:en attente,en cours,terminé'],
+                'status' => ['required', 'in:en attente,en cours,terminé', new DependenciesResolved($task)],
                 'priority' => ['required', 'in:basse,moyenne,haute'],
                 'start_date' => ['nullable', 'date'],
                 'end_date' => ['nullable', 'date'],
@@ -42,7 +43,7 @@ class UpdateTaskRequest extends FormRequest
         }
 
         return [
-            'status' => ['required', 'in:en attente,en cours,terminé'],
+            'status' => ['required', 'in:en attente,en cours,terminé', new DependenciesResolved($task)],
         ];
     }
 }

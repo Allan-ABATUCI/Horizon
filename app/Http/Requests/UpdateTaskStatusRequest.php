@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\DependenciesResolved;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -25,7 +26,7 @@ class UpdateTaskStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['required', 'in:en attente,en cours,terminé'],
+            'status' => ['required', 'in:en attente,en cours,terminé', new DependenciesResolved($this->route('task'))],
         ];
     }
 }
