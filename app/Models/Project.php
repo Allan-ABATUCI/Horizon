@@ -32,6 +32,11 @@ class Project extends Model
         return $this->hasMany(Task::class);
     }
 
+    public function members()
+    {
+        return $this->belongsToMany(User::class, 'project_user')->withTimestamps();
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');

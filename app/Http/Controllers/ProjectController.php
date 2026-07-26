@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AddProjectMemberRequest;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
+use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -18,11 +20,14 @@ class ProjectController extends Controller
     {
         $this->authorize('viewAny', Project::class);
 
-        $query = Project::query()->with(['creator', 'editor']);
+        $query = Project::query()
+            ->whereHas('members', fn ($q) => $q->where('user_id', auth()->id()))
+            ->with(['creator', 'editor', 'members']);
         $projects = $query->paginate(10)->onEachSide(1);
 
         return Inertia::render('project/Index', [
             'projects' => ProjectResource::collection($projects),
+            'users' => User::query()->orderBy('name')->get(['id', 'name', 'email']),
         ]);
     }
 
@@ -51,7 +56,9 @@ class ProjectController extends Controller
         $validated['created_by'] = auth()->id();
         $validated['updated_by'] = auth()->id();
 
-        Project::create($validated);
+        $project = Project::create($validated);
+
+        $project->members()->attach(auth()->id());
 
         return redirect()->route('project.index')->with('success', 'Projet créé.');
     }
@@ -118,5 +125,32 @@ class ProjectController extends Controller
         $project->delete();
 
         return redirect()->route('project.index')->with('success', 'Projet supprimé.');
+    }
+
+    /**
+     * Ajoute un membre au projet — réservé au créateur (ProjectPolicy::update).
+     */
+    public function addMember(AddProjectMemberRequest $request, Project $project)
+    {
+        $project->members()->syncWithoutDetaching([$request->validated('user_id')]);
+
+        return redirect()->route('project.index')->with('success', 'Membre ajouté.');
+    }
+
+    /**
+     * Retire un membre du projet — réservé au créateur, qui ne peut pas se
+     * retirer lui-même (il resterait un projet sans propriétaire membre).
+     */
+    public function removeMember(Project $project, User $user)
+    {
+        $this->authorize('update', $project);
+
+        if ($user->id === $project->created_by) {
+            return redirect()->route('project.index')->with('error', 'Le créateur du projet ne peut pas être retiré.');
+        }
+
+        $project->members()->detach($user->id);
+
+        return redirect()->route('project.index')->with('success', 'Membre retiré.');
     }
 }

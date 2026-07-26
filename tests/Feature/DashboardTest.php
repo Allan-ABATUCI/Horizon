@@ -29,6 +29,7 @@ class DashboardTest extends TestCase
         $user = User::factory()->create();
         $stranger = User::factory()->create();
         $project = Project::factory()->create(['created_by' => $stranger->id, 'updated_by' => $stranger->id]);
+        $project->members()->attach($user->id);
 
         $createdByMe = Task::factory()->create([
             'project_id' => $project->id,
@@ -60,14 +61,26 @@ class DashboardTest extends TestCase
         $this->assertFalse($taskIds->contains($unrelated->id));
     }
 
-    public function test_scope_all_lists_tasks_from_every_user()
+    public function test_scope_all_only_lists_tasks_from_the_users_own_projects()
     {
         $user = User::factory()->create();
         $stranger = User::factory()->create();
-        $project = Project::factory()->create(['created_by' => $stranger->id, 'updated_by' => $stranger->id]);
 
+        $myProject = Project::factory()->create(['created_by' => $user->id, 'updated_by' => $user->id]);
+        $othersProject = Project::factory()->create(['created_by' => $stranger->id, 'updated_by' => $stranger->id]);
+
+        // Un tiers dans mon propre projet : ni créée par moi ni assignée à moi,
+        // mais doit apparaître en scope=all puisque je suis membre du projet.
+        $taskInMyProject = Task::factory()->create([
+            'project_id' => $myProject->id,
+            'created_by' => $user->id,
+            'updated_by' => $user->id,
+            'assigned_user_id' => $user->id,
+        ]);
+
+        // Tâche d'un projet dont je ne suis pas membre : ne doit jamais apparaître.
         $unrelated = Task::factory()->create([
-            'project_id' => $project->id,
+            'project_id' => $othersProject->id,
             'created_by' => $stranger->id,
             'updated_by' => $stranger->id,
             'assigned_user_id' => $stranger->id,
@@ -79,7 +92,8 @@ class DashboardTest extends TestCase
         $page = json_decode(json_encode($response->viewData('page')), true);
         $taskIds = collect($page['props']['tasks']['data'])->pluck('id');
 
-        $this->assertTrue($taskIds->contains($unrelated->id));
+        $this->assertTrue($taskIds->contains($taskInMyProject->id));
+        $this->assertFalse($taskIds->contains($unrelated->id));
     }
 
     public function test_project_id_filter_restricts_tasks_to_that_project()

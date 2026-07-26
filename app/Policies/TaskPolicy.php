@@ -14,7 +14,7 @@ class TaskPolicy
 
     public function view(User $user, Task $task): bool
     {
-        return true;
+        return $task->project->members()->where('user_id', $user->id)->exists();
     }
 
     public function create(User $user): bool

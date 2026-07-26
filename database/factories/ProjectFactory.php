@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -10,6 +11,18 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class ProjectFactory extends Factory
 {
+    /**
+     * Attache automatiquement le créateur (et les assignés des tâches déjà
+     * créées, utile pour hasTasks()) comme membres du projet.
+     */
+    public function configure(): static
+    {
+        return $this->afterCreating(function (Project $project) {
+            $memberIds = $project->tasks()->pluck('assigned_user_id')->push($project->created_by)->unique();
+            $project->members()->syncWithoutDetaching($memberIds);
+        });
+    }
+
     /**
      * Define the model's default state.
      *

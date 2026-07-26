@@ -25,6 +25,7 @@ class ProjectResource extends JsonResource
             'created_by' => new UserResource($this->creator),
             'updated_by' => new UserResource($this->editor),
             'status' => $this->status,
+            'members' => UserResource::collection($this->whenLoaded('members')),
         ];
     }
 }

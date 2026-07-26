@@ -34,9 +34,11 @@ function imageSrc(imagePath: string | null) {
 export function getProjectColumns({
     onEdit,
     onDelete,
+    onManageMembers,
 }: {
     onEdit: (project: Project) => void;
     onDelete: (project: Project) => void;
+    onManageMembers: (project: Project) => void;
 }): ColumnDef<Project>[] {
     return [
         {
@@ -106,6 +108,7 @@ export function getProjectColumns({
                                 Voir tâches
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => onEdit(project)}>Modifier Projet</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onManageMembers(project)}>Gérer les membres</DropdownMenuItem>
                             <DropdownMenuItem
                                 variant="destructive"
                                 onClick={() => {

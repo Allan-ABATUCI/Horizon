@@ -1,17 +1,24 @@
 import { PaginationLinks } from '@/components/pagination-links';
 import { ProjectFormDialog } from '@/components/project/project-form-dialog';
+import { ProjectMembersDialog } from '@/components/project/project-members-dialog';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import AppLayout from '@/layouts/app-layout';
 import { getProjectColumns } from '@/pages/project/columns';
-import { Project, type BreadcrumbItem, type PaginatedResponse } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { Project, type BreadcrumbItem, type PaginatedResponse, type SharedData } from '@/types';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function Index({ projects }: { projects: PaginatedResponse<Project> }) {
+type Option = { id: number; name: string };
+
+export default function Index({ projects, users }: { projects: PaginatedResponse<Project>; users: Option[] }) {
+    const { auth } = usePage<SharedData>().props;
     const [createOpen, setCreateOpen] = useState(false);
     const [editingProject, setEditingProject] = useState<Project | null>(null);
     const [editOpen, setEditOpen] = useState(false);
+    const [membersProjectId, setMembersProjectId] = useState<number | null>(null);
+    const [membersOpen, setMembersOpen] = useState(false);
+    const membersProject = projects.data.find((project) => project.id === membersProjectId);
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Tableau de bord', href: '/dashboard' },
@@ -24,6 +31,10 @@ export default function Index({ projects }: { projects: PaginatedResponse<Projec
             setEditOpen(true);
         },
         onDelete: (project) => router.delete(route('project.destroy', project.id), { preserveScroll: true }),
+        onManageMembers: (project) => {
+            setMembersProjectId(project.id);
+            setMembersOpen(true);
+        },
     });
 
     return (
@@ -39,6 +50,13 @@ export default function Index({ projects }: { projects: PaginatedResponse<Projec
 
             <ProjectFormDialog mode="create" open={createOpen} onOpenChange={setCreateOpen} />
             <ProjectFormDialog mode="edit" project={editingProject ?? undefined} open={editOpen} onOpenChange={setEditOpen} />
+            <ProjectMembersDialog
+                project={membersProject}
+                allUsers={users}
+                currentUserId={auth.user.id}
+                open={membersOpen}
+                onOpenChange={setMembersOpen}
+            />
         </AppLayout>
     );
 }

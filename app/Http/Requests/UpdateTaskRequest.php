@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateTaskRequest extends FormRequest
 {
@@ -33,7 +34,7 @@ class UpdateTaskRequest extends FormRequest
                 'start_date' => ['nullable', 'date'],
                 'end_date' => ['nullable', 'date'],
                 'assigned_user_id' => ['required', 'exists:users,id'],
-                'project_id' => ['required', 'exists:projects,id'],
+                'project_id' => ['required', Rule::exists('project_user', 'project_id')->where('user_id', $this->user()->id)],
                 'image' => ['nullable', 'image', 'max:2048'],
             ];
         }

@@ -62,6 +62,7 @@ export interface Project {
     updated_by: UserSummary;
     updated_at: string;
     created_at: string;
+    members: UserSummary[];
 }
 
 export interface Task {

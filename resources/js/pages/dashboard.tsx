@@ -1,5 +1,5 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { TaskCalendarView } from '@/components/calendar/task-calendar-view';
 import { TaskGanttView } from '@/components/gantt/task-gantt-view';
@@ -13,6 +13,7 @@ import { type BreadcrumbItem, type SharedData, type Task } from '@/types';
 import { CalendarDays, GanttChart, LayoutGrid } from 'lucide-react';
 
 type Option = { id: number; name: string };
+type ProjectOption = { id: number; name: string; members: Option[] };
 type Scope = 'mine' | 'all';
 type View = 'kanban' | 'calendar' | 'gantt';
 
@@ -26,12 +27,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Dashboard({
     tasks,
     projects,
-    users,
     filters,
 }: {
     tasks: { data: Task[] };
-    projects: Option[];
-    users: Option[];
+    projects: ProjectOption[];
     filters: { scope: Scope; project_id: number | null };
 }) {
     const { auth } = usePage<SharedData>().props;
@@ -53,6 +52,22 @@ export default function Dashboard({
 
     const canEditAllFields = (task: Task | null) => !task || task.created_by.id === auth.user.id;
 
+    useEffect(() => {
+        const taskId = new URLSearchParams(window.location.search).get('task');
+        if (!taskId) {
+            return;
+        }
+
+        const task = tasks.data.find((t) => t.id === Number(taskId));
+        if (task) {
+            setEditingTask(task);
+            setEditOpen(true);
+        }
+
+        window.history.replaceState(null, '', route('dashboard'));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Tableau de bord" />
@@ -63,7 +78,7 @@ export default function Dashboard({
                         <p className="text-sm text-muted-foreground">
                             {scope === 'mine'
                                 ? 'Tâches que tu as créées ou qui te sont assignées.'
-                                : 'Toutes les tâches, tous utilisateurs confondus.'}
+                                : 'Toutes les tâches de tes projets, tous utilisateurs confondus.'}
                         </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -194,9 +209,9 @@ export default function Dashboard({
                 open={createOpen}
                 onOpenChange={setCreateOpen}
                 projects={projects}
-                users={users}
                 lockedProjectId={filters.project_id}
                 defaultEndDate={createDefaultDate ?? undefined}
+                currentUserId={auth.user.id}
             />
             <TaskFormDialog
                 mode="edit"
@@ -204,8 +219,8 @@ export default function Dashboard({
                 open={editOpen}
                 onOpenChange={setEditOpen}
                 projects={projects}
-                users={users}
                 canEditAllFields={canEditAllFields(editingTask)}
+                currentUserId={auth.user.id}
             />
         </AppLayout>
     );

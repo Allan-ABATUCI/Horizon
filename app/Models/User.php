@@ -60,4 +60,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Task::class, 'assigned_user_id');
     }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function projects()
+    {
+        return $this->belongsToMany(Project::class, 'project_user')->withTimestamps();
+    }
 }
