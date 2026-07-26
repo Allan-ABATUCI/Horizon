@@ -23,20 +23,29 @@ Une application web complète qui simplifie la gestion de projets pour les équi
 
 ### Points techniques remarquables
 - Architecture unifiée backend/frontend grâce à Inertia
-- API RESTful pour une extensibilité future
+- Permissions par ressource (policies) : chaque projet/tâche n'est modifiable que par son créateur, un assigné ne peut changer que le statut de sa tâche
 - Système de composants React réutilisables
+- Interface entièrement en français, y compris les messages de validation et la pagination côté serveur
+- Plusieurs thèmes de couleurs (en plus du mode clair/sombre)
+- Rappels d'échéance planifiés via le scheduler Laravel : nécessite `php artisan schedule:work` en local, ou une entrée cron `* * * * * php artisan schedule:run` en déploiement
+- Recherche plein texte via SQLite FTS5 (classement par pertinence, insensible aux accents), sans dépendance externe
 
 ---
 
-### Prochaines étapes
-- Tableaux de bord et rapports visuels
-- Tableaux Kanban interactifs avec glisser-déposer
+### Fonctionnalités 
+- CRUD complet Projets / Tâches / Utilisateurs
+- Tableau Kanban interactif avec glisser-déposer
 - Calendrier de projet et gestion des échéances
-- Gestion des membres et des permissions
-- Messagerie intégrée et système de notifications
-- Gestion de fichiers et documents
+- Frise (Gantt) pour visualiser la durée des tâches sur plusieurs jours
+- Permissions par ressource (créateur vs assigné)
+- Commentaires sur les tâches
+- Notifications (assignation d'une tâche, échéance à J-1)
+- Membres par projet : seuls les membres voient et interagissent avec un projet, ses tâches et ses commentaires ; le créateur gère qui rejoint
+- Recherche globale (projets et tâches, raccourci Cmd/Ctrl+K)
+- Pièces jointes multiples sur les tâches (10 max, 2 Mo/fichier, liste blanche de types, stockage privé)
+
+### Prochaines étapes
 - Espaces de travail multiples
-- Intégration de diagrammes de Gantt
 - Synchronisation en temps réel
 - Applications mobiles (via API)
 - Intégrations tierces (Slack, Google Calendar)
