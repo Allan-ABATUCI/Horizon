@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Project;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreProjectRequest extends FormRequest
@@ -18,13 +19,13 @@ class StoreProjectRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
+            'description' => ['nullable', 'string', 'max:10000'],
             'end_date' => ['nullable', 'date'],
             'status' => ['required', 'in:en attente,en cours,terminé'],
             'image' => ['nullable', 'image', 'max:2048'],

@@ -113,4 +113,14 @@ class SearchTest extends TestCase
         $absentWord = $this->actingAs($user)->get('/search?q=bug+facturation')->json();
         $this->assertFalse(collect($absentWord['tasks'])->pluck('id')->contains($task->id));
     }
+
+    public function test_an_extremely_long_query_does_not_error(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get('/search?q='.str_repeat('a', 100000));
+
+        $response->assertOk();
+        $response->assertJson(['projects' => [], 'tasks' => []]);
+    }
 }

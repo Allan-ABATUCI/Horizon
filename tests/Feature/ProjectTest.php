@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ProjectTest extends TestCase
@@ -74,5 +76,52 @@ class ProjectTest extends TestCase
 
         $this->actingAs($other)->delete("/project/{$project->id}")->assertForbidden();
         $this->assertDatabaseHas('projects', ['id' => $project->id]);
+    }
+
+    public function test_creating_a_project_with_an_image_stores_it_on_the_public_disk()
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post('/project', [
+            'name' => 'Projet avec image',
+            'status' => 'en attente',
+            'image' => UploadedFile::fake()->create('cover.jpg', 100, 'image/jpeg'),
+        ])->assertRedirect(route('project.index'));
+
+        $project = Project::where('name', 'Projet avec image')->firstOrFail();
+        $this->assertNotNull($project->image_path);
+        Storage::disk('public')->assertExists($project->image_path);
+    }
+
+    public function test_deleting_a_project_removes_its_image_from_disk()
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create();
+        $path = UploadedFile::fake()->create('cover.jpg', 100, 'image/jpeg')->store('projects', 'public');
+        $project = Project::factory()->create([
+            'created_by' => $user->id,
+            'updated_by' => $user->id,
+            'image_path' => $path,
+        ]);
+
+        $this->actingAs($user)->delete("/project/{$project->id}")->assertRedirect(route('project.index'));
+
+        Storage::disk('public')->assertMissing($path);
+    }
+
+    public function test_an_oversized_description_is_rejected()
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/project', [
+                'name' => 'Projet',
+                'description' => str_repeat('a', 10001),
+                'status' => 'en attente',
+            ], ['Accept' => 'application/json'])
+            ->assertStatus(422);
     }
 }

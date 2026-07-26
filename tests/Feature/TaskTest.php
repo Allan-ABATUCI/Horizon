@@ -6,6 +6,8 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class TaskTest extends TestCase
@@ -161,5 +163,115 @@ class TaskTest extends TestCase
             ->assertForbidden();
 
         $this->assertDatabaseHas('tasks', ['id' => $task->id, 'status' => $task->status]);
+    }
+
+    public function test_the_project_owner_can_delete_a_task_created_by_another_member()
+    {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $project = Project::factory()->create(['created_by' => $owner->id, 'updated_by' => $owner->id]);
+        $project->members()->attach($member->id);
+        $task = Task::factory()->create([
+            'project_id' => $project->id,
+            'created_by' => $member->id,
+            'updated_by' => $member->id,
+            'assigned_user_id' => $member->id,
+        ]);
+
+        $this->actingAs($owner)->delete("/task/{$task->id}")->assertRedirect(route('dashboard'));
+
+        $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
+    }
+
+    public function test_a_non_owner_member_still_cannot_delete_another_members_task()
+    {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $otherMember = User::factory()->create();
+        $project = Project::factory()->create(['created_by' => $owner->id, 'updated_by' => $owner->id]);
+        $project->members()->attach([$member->id, $otherMember->id]);
+        $task = Task::factory()->create([
+            'project_id' => $project->id,
+            'created_by' => $member->id,
+            'updated_by' => $member->id,
+            'assigned_user_id' => $member->id,
+        ]);
+
+        $this->actingAs($otherMember)->delete("/task/{$task->id}")->assertForbidden();
+        $this->assertDatabaseHas('tasks', ['id' => $task->id]);
+    }
+
+    public function test_creating_a_task_with_an_image_stores_it_on_the_public_disk()
+    {
+        Storage::fake('public');
+
+        $creator = User::factory()->create();
+        $project = Project::factory()->create(['created_by' => $creator->id, 'updated_by' => $creator->id]);
+
+        $this->actingAs($creator)->post('/task', [
+            'name' => 'Tâche avec image',
+            'status' => 'en attente',
+            'priority' => 'moyenne',
+            'assigned_user_id' => $creator->id,
+            'project_id' => $project->id,
+            'image' => UploadedFile::fake()->create('cover.jpg', 100, 'image/jpeg'),
+        ])->assertRedirect(route('dashboard'));
+
+        $task = Task::where('name', 'Tâche avec image')->firstOrFail();
+        $this->assertNotNull($task->image_path);
+        Storage::disk('public')->assertExists($task->image_path);
+    }
+
+    public function test_deleting_a_task_removes_its_image_from_disk()
+    {
+        Storage::fake('public');
+
+        $creator = User::factory()->create();
+        $project = Project::factory()->create(['created_by' => $creator->id, 'updated_by' => $creator->id]);
+        $path = UploadedFile::fake()->create('cover.jpg', 100, 'image/jpeg')->store('tasks', 'public');
+        $task = Task::factory()->create([
+            'project_id' => $project->id,
+            'created_by' => $creator->id,
+            'updated_by' => $creator->id,
+            'assigned_user_id' => $creator->id,
+            'image_path' => $path,
+        ]);
+
+        $this->actingAs($creator)->delete("/task/{$task->id}")->assertRedirect(route('dashboard'));
+
+        Storage::disk('public')->assertMissing($path);
+    }
+
+    public function test_an_oversized_description_is_rejected()
+    {
+        $creator = User::factory()->create();
+        $project = Project::factory()->create(['created_by' => $creator->id, 'updated_by' => $creator->id]);
+
+        $this->actingAs($creator)
+            ->post('/task', [
+                'name' => 'Tâche',
+                'description' => str_repeat('a', 10001),
+                'status' => 'en attente',
+                'priority' => 'moyenne',
+                'assigned_user_id' => $creator->id,
+                'project_id' => $project->id,
+            ], ['Accept' => 'application/json'])
+            ->assertStatus(422);
+    }
+
+    public function test_an_array_instead_of_a_scalar_id_is_rejected_cleanly()
+    {
+        $creator = User::factory()->create();
+        $project = Project::factory()->create(['created_by' => $creator->id, 'updated_by' => $creator->id]);
+
+        $this->actingAs($creator)
+            ->post('/task', [
+                'name' => 'Tâche',
+                'status' => 'en attente',
+                'priority' => 'moyenne',
+                'assigned_user_id' => [$creator->id, $creator->id],
+                'project_id' => $project->id,
+            ], ['Accept' => 'application/json'])
+            ->assertStatus(422);
     }
 }

@@ -31,8 +31,12 @@ class TaskPolicy
         return $user->id === $task->created_by || $user->id === $task->assigned_user_id;
     }
 
+    /**
+     * Le créateur de la tâche, ou le créateur du projet (modération de son
+     * propre projet), peut la supprimer.
+     */
     public function delete(User $user, Task $task): bool
     {
-        return $user->id === $task->created_by;
+        return $user->id === $task->created_by || $user->id === $task->project->created_by;
     }
 }

@@ -10,9 +10,6 @@ on:
       - develop
       - main
 
-permissions:
-  contents: write
-
 jobs:
   quality:
     runs-on: ubuntu-latest
@@ -30,16 +27,16 @@ jobs:
           npm install
 
       - name: Run Pint
-        run: vendor/bin/pint
+        run: vendor/bin/pint --test
 
       - name: Format Frontend
-        run: npm run format
+        run: npx prettier --check resources/
 
       - name: Lint Frontend
         run: npm run lint
 
-      # - name: Commit Changes
-      #   uses: stefanzweifel/git-auto-commit-action@v5
-      #   with:
-      #     commit_message: fix code style
-      #     commit_options: '--no-verify'
+      - name: Audit PHP dependencies
+        run: composer audit
+
+      - name: Audit JS dependencies (production only)
+        run: npm audit --omit=dev

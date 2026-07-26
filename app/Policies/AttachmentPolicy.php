@@ -17,8 +17,12 @@ class AttachmentPolicy
         return $task->project->members()->where('user_id', $user->id)->exists();
     }
 
+    /**
+     * L'auteur de l'upload, ou le créateur du projet (modération de son
+     * propre projet), peut supprimer la pièce jointe.
+     */
     public function delete(User $user, Attachment $attachment): bool
     {
-        return $user->id === $attachment->user_id;
+        return $user->id === $attachment->user_id || $user->id === $attachment->task->project->created_by;
     }
 }

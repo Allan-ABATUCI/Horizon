@@ -1,7 +1,7 @@
 ### Le concept
 Une application web complète qui simplifie la gestion de projets pour les équipes. Interface intuitive et outils puissants pour planifier, suivre et livrer des projets efficacement.
 
-**Statut** : En développement
+**Statut** : v1.0.0
 
 ---
 
@@ -9,6 +9,37 @@ Une application web complète qui simplifie la gestion de projets pour les équi
 **Backend** : Laravel avec Inertia.js  
 **Frontend** : React  
 **Base de données** : sqlite  
+
+---
+
+### Installation
+
+```bash
+git clone https://github.com/Allan-ABATUCI/Horizon.git
+cd Horizon
+
+composer install
+npm install
+
+cp .env.example .env
+php artisan key:generate
+
+touch database/database.sqlite
+php artisan migrate --seed
+
+php artisan storage:link
+
+npm run build   # ou `npm run dev` pour le hot-reload en développement
+php artisan serve
+```
+
+L'application est ensuite accessible sur `http://localhost:8000`. Le seeder crée un compte de démonstration (`allan@example.com` / `Laflemme1!`) ainsi que des projets/tâches d'exemple.
+
+**Pour le déploiement** (au-delà du dev local) :
+- Mettre `APP_ENV=production` et `APP_DEBUG=false` dans `.env`.
+- Derrière un reverse proxy (Traefik, Nginx Proxy Manager...) qui termine le TLS : l'app fait confiance à tous les proxies par défaut (`bootstrap/app.php`) pour lire `X-Forwarded-Proto` — à restreindre à l'IP du proxy si elle est fixe. La redirection HTTP→HTTPS et le flag `secure` du cookie de session s'activent automatiquement dès que la requête est détectée comme sécurisée ; `SESSION_SECURE_COOKIE=true` peut être posé explicitement si le proxy ne transmet pas cet en-tête correctement.
+- Faire tourner le planificateur pour les rappels d'échéance : `php artisan schedule:work` (process persistant), ou une entrée cron `* * * * * php artisan schedule:run` sur le serveur.
+- `php artisan config:cache` et `php artisan route:cache` après tout changement de configuration.
 
 ---
 
@@ -29,6 +60,8 @@ Une application web complète qui simplifie la gestion de projets pour les équi
 - Plusieurs thèmes de couleurs (en plus du mode clair/sombre)
 - Rappels d'échéance planifiés via le scheduler Laravel : nécessite `php artisan schedule:work` en local, ou une entrée cron `* * * * * php artisan schedule:run` en déploiement
 - Recherche plein texte via SQLite FTS5 (classement par pertinence, insensible aux accents), sans dépendance externe
+- Content-Security-Policy avec nonce par requête (scripts Vite/Ziggy), X-Frame-Options, HSTS, redirection HTTPS automatique derrière un reverse proxy — actifs en production, sans impact sur le dev local
+- `composer audit`/`npm audit` en CI pour détecter les dépendances vulnérables à chaque push
 
 ---
 

@@ -53,6 +53,22 @@ class AttachmentTest extends TestCase
         Storage::disk('local')->assertExists($attachment->path);
     }
 
+    public function test_an_extremely_long_filename_is_truncated()
+    {
+        Storage::fake('local');
+
+        $task = $this->makeTask();
+        $member = $task->assignedUser;
+        $longName = str_repeat('a', 300).'.pdf';
+
+        $this->actingAs($member)->post("/task/{$task->id}/attachments", [
+            'file' => UploadedFile::fake()->create($longName, 500, 'application/pdf'),
+        ])->assertSuccessful();
+
+        $attachment = Attachment::firstOrFail();
+        $this->assertLessThanOrEqual(255, mb_strlen($attachment->original_name));
+    }
+
     public function test_a_non_member_cannot_upload_an_attachment()
     {
         Storage::fake('local');
@@ -109,6 +125,30 @@ class AttachmentTest extends TestCase
         $this->actingAs($otherMember)->delete("/attachments/{$attachment->id}")->assertForbidden();
 
         $this->assertDatabaseHas('attachments', ['id' => $attachment->id]);
+    }
+
+    public function test_the_project_owner_can_delete_another_members_attachment()
+    {
+        Storage::fake('local');
+
+        $task = $this->makeTask();
+        $owner = $task->creator;
+        $member = User::factory()->create();
+        $task->project->members()->attach($member->id);
+
+        $path = UploadedFile::fake()->create('rapport.pdf', 500, 'application/pdf')->store('attachments', 'local');
+        $attachment = $task->attachments()->create([
+            'user_id' => $member->id,
+            'original_name' => 'rapport.pdf',
+            'path' => $path,
+            'mime_type' => 'application/pdf',
+            'size' => 500 * 1024,
+        ]);
+
+        $this->actingAs($owner)->delete("/attachments/{$attachment->id}")->assertSuccessful();
+
+        $this->assertDatabaseMissing('attachments', ['id' => $attachment->id]);
+        Storage::disk('local')->assertMissing($path);
     }
 
     public function test_a_disallowed_file_type_is_rejected()
