@@ -77,4 +77,40 @@ class SearchTest extends TestCase
         $this->assertFalse(collect($data['projects'])->pluck('id')->contains($project->id));
         $this->assertFalse(collect($data['tasks'])->pluck('id')->contains($task->id));
     }
+
+    public function test_search_is_accent_insensitive()
+    {
+        $user = User::factory()->create();
+        $project = Project::factory()->create([
+            'created_by' => $user->id,
+            'updated_by' => $user->id,
+            'name' => 'Café des développeurs',
+        ]);
+
+        $response = $this->actingAs($user)->get('/search?q=cafe');
+
+        $response->assertOk();
+        $data = $response->json();
+
+        $this->assertTrue(collect($data['projects'])->pluck('id')->contains($project->id));
+    }
+
+    public function test_search_matches_multiple_words_combined_with_and()
+    {
+        $user = User::factory()->create();
+        $project = Project::factory()->create(['created_by' => $user->id, 'updated_by' => $user->id]);
+        $task = Task::factory()->create([
+            'project_id' => $project->id,
+            'created_by' => $user->id,
+            'updated_by' => $user->id,
+            'assigned_user_id' => $user->id,
+            'name' => "Corriger le bug d'export CSV",
+        ]);
+
+        $bothWords = $this->actingAs($user)->get('/search?q=bug+export')->json();
+        $this->assertTrue(collect($bothWords['tasks'])->pluck('id')->contains($task->id));
+
+        $absentWord = $this->actingAs($user)->get('/search?q=bug+facturation')->json();
+        $this->assertFalse(collect($absentWord['tasks'])->pluck('id')->contains($task->id));
+    }
 }
