@@ -111,4 +111,17 @@ class ProjectTest extends TestCase
 
         Storage::disk('public')->assertMissing($path);
     }
+
+    public function test_an_oversized_description_is_rejected()
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/project', [
+                'name' => 'Projet',
+                'description' => str_repeat('a', 10001),
+                'status' => 'en attente',
+            ], ['Accept' => 'application/json'])
+            ->assertStatus(422);
+    }
 }

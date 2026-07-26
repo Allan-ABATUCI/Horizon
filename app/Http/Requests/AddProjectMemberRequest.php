@@ -25,6 +25,7 @@ class AddProjectMemberRequest extends FormRequest
         return [
             'user_id' => [
                 'required',
+                'integer',
                 'exists:users,id',
                 Rule::unique('project_user', 'user_id')->where('project_id', $this->route('project')->id),
             ],

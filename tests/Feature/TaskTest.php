@@ -241,4 +241,37 @@ class TaskTest extends TestCase
 
         Storage::disk('public')->assertMissing($path);
     }
+
+    public function test_an_oversized_description_is_rejected()
+    {
+        $creator = User::factory()->create();
+        $project = Project::factory()->create(['created_by' => $creator->id, 'updated_by' => $creator->id]);
+
+        $this->actingAs($creator)
+            ->post('/task', [
+                'name' => 'Tâche',
+                'description' => str_repeat('a', 10001),
+                'status' => 'en attente',
+                'priority' => 'moyenne',
+                'assigned_user_id' => $creator->id,
+                'project_id' => $project->id,
+            ], ['Accept' => 'application/json'])
+            ->assertStatus(422);
+    }
+
+    public function test_an_array_instead_of_a_scalar_id_is_rejected_cleanly()
+    {
+        $creator = User::factory()->create();
+        $project = Project::factory()->create(['created_by' => $creator->id, 'updated_by' => $creator->id]);
+
+        $this->actingAs($creator)
+            ->post('/task', [
+                'name' => 'Tâche',
+                'status' => 'en attente',
+                'priority' => 'moyenne',
+                'assigned_user_id' => [$creator->id, $creator->id],
+                'project_id' => $project->id,
+            ], ['Accept' => 'application/json'])
+            ->assertStatus(422);
+    }
 }

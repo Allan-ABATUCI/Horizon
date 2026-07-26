@@ -53,6 +53,22 @@ class AttachmentTest extends TestCase
         Storage::disk('local')->assertExists($attachment->path);
     }
 
+    public function test_an_extremely_long_filename_is_truncated()
+    {
+        Storage::fake('local');
+
+        $task = $this->makeTask();
+        $member = $task->assignedUser;
+        $longName = str_repeat('a', 300).'.pdf';
+
+        $this->actingAs($member)->post("/task/{$task->id}/attachments", [
+            'file' => UploadedFile::fake()->create($longName, 500, 'application/pdf'),
+        ])->assertSuccessful();
+
+        $attachment = Attachment::firstOrFail();
+        $this->assertLessThanOrEqual(255, mb_strlen($attachment->original_name));
+    }
+
     public function test_a_non_member_cannot_upload_an_attachment()
     {
         Storage::fake('local');

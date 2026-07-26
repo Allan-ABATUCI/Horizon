@@ -30,7 +30,7 @@ class AttachmentController extends Controller
 
         $attachment = $task->attachments()->create([
             'user_id' => $request->user()->id,
-            'original_name' => basename($file->getClientOriginalName()),
+            'original_name' => mb_substr(basename($file->getClientOriginalName()), 0, 255),
             'path' => $path,
             'mime_type' => $file->getClientMimeType(),
             'size' => $file->getSize(),
