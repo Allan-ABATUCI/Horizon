@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\AssignableUser;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -33,7 +34,7 @@ class UpdateTaskRequest extends FormRequest
                 'priority' => ['required', 'in:basse,moyenne,haute'],
                 'start_date' => ['nullable', 'date'],
                 'end_date' => ['nullable', 'date'],
-                'assigned_user_id' => ['required', 'exists:users,id'],
+                'assigned_user_id' => ['required', 'exists:users,id', new AssignableUser($this->integer('project_id'), $this->user()->id)],
                 'project_id' => ['required', Rule::exists('project_user', 'project_id')->where('user_id', $this->user()->id)],
                 'image' => ['nullable', 'image', 'max:2048'],
             ];
