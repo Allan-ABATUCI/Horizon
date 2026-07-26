@@ -37,6 +37,7 @@ L'application est ensuite accessible sur `http://localhost:8000`. Le seeder cré
 
 **Pour le déploiement** (au-delà du dev local) :
 - Mettre `APP_ENV=production` et `APP_DEBUG=false` dans `.env`.
+- Derrière un reverse proxy (Traefik, Nginx Proxy Manager...) qui termine le TLS : l'app fait confiance à tous les proxies par défaut (`bootstrap/app.php`) pour lire `X-Forwarded-Proto` — à restreindre à l'IP du proxy si elle est fixe. La redirection HTTP→HTTPS et le flag `secure` du cookie de session s'activent automatiquement dès que la requête est détectée comme sécurisée ; `SESSION_SECURE_COOKIE=true` peut être posé explicitement si le proxy ne transmet pas cet en-tête correctement.
 - Faire tourner le planificateur pour les rappels d'échéance : `php artisan schedule:work` (process persistant), ou une entrée cron `* * * * * php artisan schedule:run` sur le serveur.
 - `php artisan config:cache` et `php artisan route:cache` après tout changement de configuration.
 
@@ -59,6 +60,8 @@ L'application est ensuite accessible sur `http://localhost:8000`. Le seeder cré
 - Plusieurs thèmes de couleurs (en plus du mode clair/sombre)
 - Rappels d'échéance planifiés via le scheduler Laravel : nécessite `php artisan schedule:work` en local, ou une entrée cron `* * * * * php artisan schedule:run` en déploiement
 - Recherche plein texte via SQLite FTS5 (classement par pertinence, insensible aux accents), sans dépendance externe
+- Content-Security-Policy avec nonce par requête (scripts Vite/Ziggy), X-Frame-Options, HSTS, redirection HTTPS automatique derrière un reverse proxy — actifs en production, sans impact sur le dev local
+- `composer audit`/`npm audit` en CI pour détecter les dépendances vulnérables à chaque push
 
 ---
 

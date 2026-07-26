@@ -34,3 +34,9 @@ jobs:
 
       - name: Lint Frontend
         run: npm run lint
+
+      - name: Audit PHP dependencies
+        run: composer audit
+
+      - name: Audit JS dependencies (production only)
+        run: npm audit --omit=dev
