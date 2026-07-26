@@ -4,6 +4,7 @@ import { FormEventHandler, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { readXsrfToken } from '@/lib/csrf';
 
 type Comment = {
     id: number;
@@ -15,11 +16,6 @@ type Comment = {
         email: string;
     };
 };
-
-function readXsrfToken(): string {
-    const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
-    return match ? decodeURIComponent(match[1]) : '';
-}
 
 export function TaskComments({ taskId, currentUserId }: { taskId: number; currentUserId: number }) {
     const [comments, setComments] = useState<Comment[]>([]);
@@ -80,12 +76,7 @@ export function TaskComments({ taskId, currentUserId }: { taskId: number; curren
             <h3 className="text-sm font-medium">Commentaires</h3>
 
             <form className="flex gap-2" onSubmit={submit}>
-                <Textarea
-                    value={body}
-                    onChange={(e) => setBody(e.target.value)}
-                    placeholder="Ajouter un commentaire…"
-                    className="min-h-16"
-                />
+                <Textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="Ajouter un commentaire…" className="min-h-16" />
                 <Button type="submit" size="sm" disabled={posting || !body.trim()} className="self-end">
                     {posting ? <LoaderCircle className="size-4 animate-spin" /> : 'Envoyer'}
                 </Button>

@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { readXsrfToken } from '@/lib/csrf';
 import { type SharedData } from '@/types';
 
 type NotificationItem = {
@@ -15,11 +16,6 @@ type NotificationItem = {
     read: boolean;
     created_at: string;
 };
-
-function readXsrfToken(): string {
-    const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
-    return match ? decodeURIComponent(match[1]) : '';
-}
 
 export function NotificationBell() {
     const { unreadNotificationsCount } = usePage<SharedData>().props;
@@ -69,10 +65,7 @@ export function NotificationBell() {
                 <Button variant="ghost" size="icon" className="group relative h-9 w-9 cursor-pointer">
                     <Bell className="!size-5 opacity-80 group-hover:opacity-100" />
                     {unreadNotificationsCount > 0 && (
-                        <Badge
-                            variant="destructive"
-                            className="absolute -top-1 -right-1 h-4 min-w-4 justify-center rounded-full p-0 text-[10px]"
-                        >
+                        <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 min-w-4 justify-center rounded-full p-0 text-[10px]">
                             {unreadNotificationsCount}
                         </Badge>
                     )}
