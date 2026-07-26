@@ -9,7 +9,7 @@ class SearchController extends Controller
 {
     public function index(Request $request)
     {
-        $term = trim((string) $request->query('q', ''));
+        $term = mb_substr(trim((string) $request->query('q', '')), 0, 100);
         $userId = auth()->id();
 
         if (mb_strlen($term) < 2) {

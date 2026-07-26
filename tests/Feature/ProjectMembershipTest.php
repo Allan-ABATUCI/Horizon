@@ -115,6 +115,17 @@ class ProjectMembershipTest extends TestCase
         $this->assertTrue($project->members()->where('user_id', $assignee->id)->exists());
     }
 
+    public function test_adding_a_member_with_an_array_instead_of_a_scalar_id_is_rejected_cleanly()
+    {
+        $owner = User::factory()->create();
+        $someoneElse = User::factory()->create();
+        $project = Project::factory()->create(['created_by' => $owner->id, 'updated_by' => $owner->id]);
+
+        $this->actingAs($owner)
+            ->post("/project/{$project->id}/members", ['user_id' => [$someoneElse->id, $someoneElse->id]], ['Accept' => 'application/json'])
+            ->assertStatus(422);
+    }
+
     public function test_a_non_owner_member_cannot_assign_a_task_to_a_non_member()
     {
         $owner = User::factory()->create();
