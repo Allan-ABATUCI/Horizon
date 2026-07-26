@@ -2,6 +2,8 @@ import { useForm } from '@inertiajs/react';
 import { FormEventHandler, useEffect } from 'react';
 
 import InputError from '@/components/input-error';
+import { TaskAttachments } from '@/components/task/task-attachments';
+import { TaskComments } from '@/components/task/task-comments';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -24,6 +26,7 @@ type TaskFormData = {
 };
 
 type Option = { id: number; name: string };
+type ProjectOption = { id: number; name: string; members: Option[] };
 
 export function TaskFormDialog({
     mode,
@@ -31,20 +34,20 @@ export function TaskFormDialog({
     open,
     onOpenChange,
     projects,
-    users,
     lockedProjectId,
     defaultEndDate,
     canEditAllFields = true,
+    currentUserId,
 }: {
     mode: 'create' | 'edit';
     task?: Task;
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    projects: Option[];
-    users: Option[];
+    projects: ProjectOption[];
     lockedProjectId?: number | null;
     defaultEndDate?: string;
     canEditAllFields?: boolean;
+    currentUserId: number;
 }) {
     const { data, setData, post, put, processing, errors, reset, clearErrors } = useForm<TaskFormData>({
         name: task?.name ?? '',
@@ -77,6 +80,21 @@ export function TaskFormDialog({
         clearErrors();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [task?.id, defaultEndDate]);
+
+    const availableUsers = projects.find((project) => String(project.id) === data.project_id)?.members ?? [];
+
+    const handleProjectChange = (value: string) => {
+        setData((current) => {
+            const members = projects.find((project) => String(project.id) === value)?.members ?? [];
+            const assigneeStillValid = members.some((member) => String(member.id) === current.assigned_user_id);
+
+            return {
+                ...current,
+                project_id: value,
+                assigned_user_id: assigneeStillValid ? current.assigned_user_id : '',
+            };
+        });
+    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -132,7 +150,7 @@ export function TaskFormDialog({
 
                     <div className="grid gap-2">
                         <Label htmlFor="project_id">Projet</Label>
-                        <Select value={data.project_id} onValueChange={(value) => setData('project_id', value)} disabled={!canEditAllFields}>
+                        <Select value={data.project_id} onValueChange={handleProjectChange} disabled={!canEditAllFields}>
                             <SelectTrigger id="project_id">
                                 <SelectValue placeholder="Choisir un projet" />
                             </SelectTrigger>
@@ -158,7 +176,7 @@ export function TaskFormDialog({
                                 <SelectValue placeholder="Choisir un utilisateur" />
                             </SelectTrigger>
                             <SelectContent>
-                                {users.map((user) => (
+                                {availableUsers.map((user) => (
                                     <SelectItem key={user.id} value={String(user.id)}>
                                         {user.name}
                                     </SelectItem>
@@ -244,6 +262,9 @@ export function TaskFormDialog({
                         </Button>
                     </DialogFooter>
                 </form>
+
+                {mode === 'edit' && task && <TaskAttachments taskId={task.id} currentUserId={currentUserId} />}
+                {mode === 'edit' && task && <TaskComments taskId={task.id} currentUserId={currentUserId} />}
             </DialogContent>
         </Dialog>
     );

@@ -6,6 +6,7 @@ use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Requests\UpdateTaskStatusRequest;
 use App\Models\Task;
+use App\Notifications\TaskAssigned;
 use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
@@ -25,7 +26,13 @@ class TaskController extends Controller
         $validated['created_by'] = auth()->id();
         $validated['updated_by'] = auth()->id();
 
-        Task::create($validated);
+        $task = Task::create($validated);
+
+        $task->project->members()->syncWithoutDetaching([$task->assigned_user_id]);
+
+        if ($task->assigned_user_id !== auth()->id()) {
+            $task->assignedUser->notify(new TaskAssigned($task));
+        }
 
         return redirect()->route('dashboard')->with('success', 'Tâche créée.');
     }
@@ -44,7 +51,15 @@ class TaskController extends Controller
 
         $data['updated_by'] = auth()->id();
 
+        $previousAssigneeId = $task->assigned_user_id;
+
         $task->update($data);
+
+        $task->project->members()->syncWithoutDetaching([$task->assigned_user_id]);
+
+        if ($task->assigned_user_id !== $previousAssigneeId && $task->assigned_user_id !== auth()->id()) {
+            $task->assignedUser->notify(new TaskAssigned($task));
+        }
 
         return redirect()->route('dashboard')->with('success', 'Tâche modifiée.');
     }
@@ -71,6 +86,10 @@ class TaskController extends Controller
 
         if ($task->image_path && ! str_starts_with($task->image_path, 'http')) {
             Storage::disk('public')->delete($task->image_path);
+        }
+
+        foreach ($task->attachments as $attachment) {
+            Storage::disk('local')->delete($attachment->path);
         }
 
         $task->delete();
