@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Rules\AssignableUser;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,7 +21,7 @@ class UpdateTaskRequest extends FormRequest
      * Le créateur peut modifier tous les champs ; l'utilisateur assigné
      * (autorisé par TaskPolicy::update) ne peut modifier que le statut.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
+use App\Notifications\TaskAssigned;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Carbon;
@@ -153,7 +154,7 @@ class NotificationTest extends TestCase
             'assigned_user_id' => $owner->id,
         ]);
 
-        $owner->notify(new \App\Notifications\TaskAssigned($task));
+        $owner->notify(new TaskAssigned($task));
         $notification = DatabaseNotification::where('notifiable_id', $owner->id)->firstOrFail();
 
         $this->actingAs($intruder)->post("/notifications/{$notification->id}/read")->assertNotFound();
