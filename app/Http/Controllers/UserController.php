@@ -99,7 +99,7 @@ class UserController extends Controller
     {
         $this->authorize('delete', $user);
 
-        if ($user->createdProjects()->exists() || $user->createdTasks()->exists()) {
+        if ($user->createdProjects()->exists() || $user->createdTasks()->exists() || $user->comments()->exists()) {
             return redirect()->route('user.index')->with('error', 'Ce compte ne peut pas être supprimé : il est lié à des projets ou tâches existants.');
         }
 
