@@ -1,0 +1,25 @@
+name: deploy
+
+on:
+  workflow_run:
+    workflows: ["tests"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: [self-hosted, horizon-prod]
+    steps:
+      # Pas de checkout via actions/checkout : ça viderait .env (non
+      # versionné) à chaque run. On fait pointer un clone persistant
+      # sur origin/main à la place.
+      - name: Déployer main
+        run: |
+          cd ~/Horizon
+          git fetch origin main
+          git reset --hard origin/main
+          docker compose up -d --build
+
+      - name: Vérifier que l'app répond
+        run: curl -sf http://127.0.0.1:8080/up
