@@ -206,6 +206,54 @@ class TaskDependencyTest extends TestCase
         $this->assertDatabaseMissing('task_dependencies', ['task_id' => $task->id]);
     }
 
+    public function test_moving_a_task_to_another_project_purges_dependencies_that_become_cross_project()
+    {
+        $creator = User::factory()->create();
+        $projectA = Project::factory()->create(['created_by' => $creator->id, 'updated_by' => $creator->id]);
+        $projectB = Project::factory()->create(['created_by' => $creator->id, 'updated_by' => $creator->id]);
+
+        $task = Task::factory()->create(['project_id' => $projectA->id, 'created_by' => $creator->id, 'assigned_user_id' => $creator->id]);
+        $dependsOn = Task::factory()->create(['project_id' => $projectA->id, 'created_by' => $creator->id, 'assigned_user_id' => $creator->id]);
+        $dependent = Task::factory()->create(['project_id' => $projectA->id, 'created_by' => $creator->id, 'assigned_user_id' => $creator->id]);
+
+        // $task dépend de $dependsOn, et $dependent dépend de $task.
+        $task->dependsOn()->attach($dependsOn->id);
+        $dependent->dependsOn()->attach($task->id);
+
+        $this->actingAs($creator)->put("/task/{$task->id}", [
+            'name' => $task->name,
+            'description' => $task->description,
+            'status' => 'en attente',
+            'priority' => 'moyenne',
+            'assigned_user_id' => $creator->id,
+            'project_id' => $projectB->id,
+        ])->assertRedirect(route('dashboard'));
+
+        $this->assertDatabaseMissing('task_dependencies', ['task_id' => $task->id, 'depends_on_id' => $dependsOn->id]);
+        $this->assertDatabaseMissing('task_dependencies', ['task_id' => $dependent->id, 'depends_on_id' => $task->id]);
+    }
+
+    public function test_updating_a_task_without_changing_its_project_keeps_its_dependencies()
+    {
+        $creator = User::factory()->create();
+        $project = Project::factory()->create(['created_by' => $creator->id, 'updated_by' => $creator->id]);
+
+        $task = Task::factory()->create(['project_id' => $project->id, 'created_by' => $creator->id, 'assigned_user_id' => $creator->id]);
+        $dependsOn = Task::factory()->create(['project_id' => $project->id, 'created_by' => $creator->id, 'assigned_user_id' => $creator->id]);
+        $task->dependsOn()->attach($dependsOn->id);
+
+        $this->actingAs($creator)->put("/task/{$task->id}", [
+            'name' => 'Nom mis à jour',
+            'description' => $task->description,
+            'status' => 'en cours',
+            'priority' => 'haute',
+            'assigned_user_id' => $creator->id,
+            'project_id' => $project->id,
+        ])->assertRedirect(route('dashboard'));
+
+        $this->assertDatabaseHas('task_dependencies', ['task_id' => $task->id, 'depends_on_id' => $dependsOn->id]);
+    }
+
     public function test_candidates_excludes_self_and_already_added_dependencies_and_requires_membership()
     {
         $creator = User::factory()->create();
