@@ -55,6 +55,13 @@ class TaskController extends Controller
 
         $task->update($data);
 
+        // Le projet a pu changer : purge les dépendances devenues inter-projets
+        // (task_dependencies suppose que les deux tâches liées partagent le
+        // même projet — sinon TaskResource fuiterait le nom/statut d'une
+        // tâche d'un projet auquel le lecteur n'a pas accès).
+        $task->dependsOn()->detach($task->dependsOn()->where('tasks.project_id', '!=', $task->project_id)->pluck('tasks.id'));
+        $task->blocks()->detach($task->blocks()->where('tasks.project_id', '!=', $task->project_id)->pluck('tasks.id'));
+
         $task->project->members()->syncWithoutDetaching([$task->assigned_user_id]);
 
         if ($task->assigned_user_id !== $previousAssigneeId && $task->assigned_user_id !== auth()->id()) {
