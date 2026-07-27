@@ -9,9 +9,7 @@ RUN npm ci && npm run build
 # --- Étape 2 : image PHP finale (Apache + mod_php) ---
 FROM php:8.4-apache AS app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        libsqlite3-dev libzip-dev libicu-dev unzip git curl \
-    && docker-php-ext-install pdo_sqlite zip intl opcache \
+RUN apt-get update && apt-get install -y --no-install-recommends unzip curl \
     && a2enmod rewrite \
     && rm -rf /var/lib/apt/lists/*
 
