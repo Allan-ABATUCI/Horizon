@@ -30,6 +30,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Demo Mode
+    |--------------------------------------------------------------------------
+    |
+    | Quand activé, autorise la commande `demo:reset` (planifiée) à
+    | réinitialiser périodiquement les données — réservé à une instance
+    | publique de démonstration, jamais à un déploiement réel.
+    |
+    */
+
+    'demo_mode' => env('DEMO_MODE', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Debug Mode
     |--------------------------------------------------------------------------
     |
