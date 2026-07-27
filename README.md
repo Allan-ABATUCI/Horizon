@@ -1,7 +1,7 @@
 ### Le concept
 Une application web complète qui simplifie la gestion de projets pour les équipes. Interface intuitive et outils puissants pour planifier, suivre et livrer des projets efficacement.
 
-**Statut** : v1.0.0
+**Statut** : v1.1.0
 
 ---
 
@@ -9,6 +9,41 @@ Une application web complète qui simplifie la gestion de projets pour les équi
 **Backend** : Laravel avec Inertia.js  
 **Frontend** : React  
 **Base de données** : sqlite  
+
+---
+
+### Architecture
+
+Pas d'API REST séparée : Inertia fait transiter les données entre Laravel et React sans exposer de couche JSON publique. L'autorisation passe systématiquement par une Policy avant d'atteindre un modèle.
+
+```mermaid
+flowchart LR
+    React["React 19"] <-- "Requêtes Inertia" --> MW
+
+    subgraph Laravel["Laravel 12"]
+        MW["Middleware<br/>(auth, CSP, HTTPS, throttle)"] --> Ctrl["Controllers"]
+        Ctrl --> FormReq["Form Requests<br/>(validation)"]
+        Ctrl --> Policy["Policies<br/>(autorisation par ressource)"]
+        Ctrl --> Model["Eloquent Models"]
+    end
+
+    Model --> DB[("SQLite<br/>+ FTS5")]
+```
+
+Modèle de données : un projet appartient à un créateur et a des membres (table pivot `project_user`, seule source de vérité pour la visibilité) ; une tâche peut dépendre d'autres tâches du même projet (`task_dependencies`).
+
+```mermaid
+erDiagram
+    USER ||--o{ PROJECT : crée
+    USER }o--o{ PROJECT : "membre (project_user)"
+    PROJECT ||--o{ TASK : contient
+    USER ||--o{ TASK : "assigné à"
+    TASK ||--o{ COMMENT : a
+    TASK ||--o{ ATTACHMENT : a
+    TASK ||--o{ CHECKLIST_ITEM : a
+    TASK }o--o{ TASK : "dépend de (task_dependencies)"
+    USER ||--o{ NOTIFICATION : reçoit
+```
 
 ---
 
@@ -41,6 +76,18 @@ L'application est ensuite accessible sur `http://localhost:8000`. Le seeder cré
 - Faire tourner le planificateur pour les rappels d'échéance : `php artisan schedule:work` (process persistant), ou une entrée cron `* * * * * php artisan schedule:run` sur le serveur.
 - `php artisan config:cache` et `php artisan route:cache` après tout changement de configuration.
 
+**Avec Docker** (`Dockerfile` + `docker-compose.yml` à la racine, indépendant de l'hébergeur — VPS, PaaS...) :
+
+```bash
+cp .env.example .env
+php artisan key:generate --show   # coller la valeur affichée dans APP_KEY sur la ligne suivante
+docker compose up -d --build
+```
+
+L'image build les assets front (étape Node) puis sert l'app via nginx + PHP-FPM sur Alpine (supervisord fait tourner les deux dans le même conteneur, ~300 Mo au total) ; au démarrage, le conteneur applique les migrations, régénère les caches config/route et crée le lien `storage` automatiquement (`docker/entrypoint.sh`). Un second service (`scheduler`) fait tourner `php artisan schedule:run` en boucle pour les rappels d'échéance. Toujours placer un reverse proxy devant (le conteneur écoute en HTTP simple sur le port 8080) pour le TLS, comme décrit ci-dessus.
+
+**Mode démo publique** : `DEMO_MODE=true` dans `.env` active la commande planifiée `demo:reset`, qui réinitialise les données (`migrate:fresh --seed`) chaque nuit — pour qu'une instance ouverte à tout le monde ne s'encrasse pas au fil des visites. Reste `false` par défaut ; à n'activer que sur une instance de démonstration, jamais un déploiement réel.
+
 ---
 
 ### Objectifs d'apprentissage
@@ -62,6 +109,8 @@ L'application est ensuite accessible sur `http://localhost:8000`. Le seeder cré
 - Recherche plein texte via SQLite FTS5 (classement par pertinence, insensible aux accents), sans dépendance externe
 - Content-Security-Policy avec nonce par requête (scripts Vite/Ziggy), X-Frame-Options, HSTS, redirection HTTPS automatique derrière un reverse proxy — actifs en production, sans impact sur le dev local
 - `composer audit`/`npm audit` en CI pour détecter les dépendances vulnérables à chaque push
+- Dépendances entre tâches : détection de cycles par parcours de graphe (BFS sur la table pivot `task_dependencies`), sans dépendance externe
+- Conteneurisation Docker (build multi-étapes Node → PHP-FPM/nginx sur Alpine, ~300 Mo), déployable tel quel sur n'importe quel hébergeur qui fait tourner des conteneurs — `php.ini-production`, OPcache réglé pour un code immuable (`validate_timestamps=0`), `expose_php` désactivé, `HEALTHCHECK` sur la route `/up`
 
 ---
 
@@ -76,6 +125,9 @@ L'application est ensuite accessible sur `http://localhost:8000`. Le seeder cré
 - Membres par projet : seuls les membres voient et interagissent avec un projet, ses tâches et ses commentaires ; le créateur gère qui rejoint
 - Recherche globale (projets et tâches, raccourci Cmd/Ctrl+K)
 - Pièces jointes multiples sur les tâches (10 max, 2 Mo/fichier, liste blanche de types, stockage privé)
+- Dépendances entre tâches (« bloque » / « est bloqué par »), avec détection des cycles et blocage du passage à « terminé » tant qu'une dépendance ne l'est pas
+- Charge de travail par membre : répartition des tâches par statut et tâches en retard, en plus des vues Kanban/Calendrier/Frise
+- Checklists sur les tâches (sous-éléments à cocher, partagés entre les membres du projet), avec barre de progression et indicateur sur les cartes du Kanban
 
 ### Prochaines étapes
 - Espaces de travail multiples

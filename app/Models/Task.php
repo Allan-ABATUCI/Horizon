@@ -62,4 +62,25 @@ class Task extends Model
     {
         return $this->hasMany(Attachment::class);
     }
+
+    public function checklistItems()
+    {
+        return $this->hasMany(ChecklistItem::class)->orderBy('id');
+    }
+
+    /**
+     * Tâches dont celle-ci dépend (doivent être terminées avant celle-ci).
+     */
+    public function dependsOn()
+    {
+        return $this->belongsToMany(Task::class, 'task_dependencies', 'task_id', 'depends_on_id')->withTimestamps();
+    }
+
+    /**
+     * Tâches qui dépendent de celle-ci (bloquées tant qu'elle n'est pas terminée).
+     */
+    public function blocks()
+    {
+        return $this->belongsToMany(Task::class, 'task_dependencies', 'depends_on_id', 'task_id')->withTimestamps();
+    }
 }
