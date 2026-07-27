@@ -32,6 +32,7 @@ class TaskResource extends JsonResource
             'updated_by' => new UserResource($this->editor),
             'depends_on' => $this->dependsOn->map(fn ($task) => ['id' => $task->id, 'name' => $task->name, 'status' => $task->status])->values(),
             'blocks' => $this->blocks->map(fn ($task) => ['id' => $task->id, 'name' => $task->name, 'status' => $task->status])->values(),
+            'checklist_items' => ChecklistItemResource::collection($this->checklistItems),
         ];
     }
 }

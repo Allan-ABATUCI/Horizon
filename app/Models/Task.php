@@ -63,6 +63,11 @@ class Task extends Model
         return $this->hasMany(Attachment::class);
     }
 
+    public function checklistItems()
+    {
+        return $this->hasMany(ChecklistItem::class)->orderBy('id');
+    }
+
     /**
      * Tâches dont celle-ci dépend (doivent être terminées avant celle-ci).
      */

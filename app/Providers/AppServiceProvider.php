@@ -3,11 +3,13 @@
 namespace App\Providers;
 
 use App\Models\Attachment;
+use App\Models\ChecklistItem;
 use App\Models\Comment;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use App\Policies\AttachmentPolicy;
+use App\Policies\ChecklistItemPolicy;
 use App\Policies\CommentPolicy;
 use App\Policies\ProjectPolicy;
 use App\Policies\TaskPolicy;
@@ -37,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Comment::class, CommentPolicy::class);
         Gate::policy(Attachment::class, AttachmentPolicy::class);
+        Gate::policy(ChecklistItem::class, ChecklistItemPolicy::class);
 
         // Nonce partagé par les tags générés par @vite/@viteReactRefresh et
         // par le script inline de Ziggy (voir resources/views/app.blade.php),

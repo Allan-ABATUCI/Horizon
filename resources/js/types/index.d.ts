@@ -83,12 +83,19 @@ export interface Task {
     created_at: string;
     depends_on: TaskDependencySummary[];
     blocks: TaskDependencySummary[];
+    checklist_items: ChecklistItem[];
 }
 
 export interface TaskDependencySummary {
     id: number;
     name: string;
     status: 'en attente' | 'en cours' | 'terminé';
+}
+
+export interface ChecklistItem {
+    id: number;
+    label: string;
+    is_done: boolean;
 }
 
 export interface PaginationLink {
