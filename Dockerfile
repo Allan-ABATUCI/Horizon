@@ -10,10 +10,13 @@ RUN npm ci && npm run build
 FROM php:8.4-apache AS app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        libsqlite3-dev libzip-dev libicu-dev unzip git \
+        libsqlite3-dev libzip-dev libicu-dev unzip git curl \
     && docker-php-ext-install pdo_sqlite zip intl opcache \
     && a2enmod rewrite \
     && rm -rf /var/lib/apt/lists/*
+
+RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+COPY docker/php-production.ini "$PHP_INI_DIR/conf.d/99-horizon.ini"
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
@@ -34,5 +37,8 @@ COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 80
+HEALTHCHECK --interval=30s --timeout=3s --start-period=20s --retries=3 \
+    CMD curl -f http://localhost/up || exit 1
+
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["apache2-foreground"]

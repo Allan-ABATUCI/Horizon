@@ -110,7 +110,7 @@ L'image build les assets front (étape Node) puis sert l'app via Apache ; au dé
 - Content-Security-Policy avec nonce par requête (scripts Vite/Ziggy), X-Frame-Options, HSTS, redirection HTTPS automatique derrière un reverse proxy — actifs en production, sans impact sur le dev local
 - `composer audit`/`npm audit` en CI pour détecter les dépendances vulnérables à chaque push
 - Dépendances entre tâches : détection de cycles par parcours de graphe (BFS sur la table pivot `task_dependencies`), sans dépendance externe
-- Conteneurisation Docker (build multi-étapes Node → PHP/Apache), déployable tel quel sur n'importe quel hébergeur qui fait tourner des conteneurs
+- Conteneurisation Docker (build multi-étapes Node → PHP/Apache), déployable tel quel sur n'importe quel hébergeur qui fait tourner des conteneurs — `php.ini-production`, OPcache réglé pour un code immuable (`validate_timestamps=0`), `expose_php` désactivé, `HEALTHCHECK` sur la route `/up`
 
 ---
 
