@@ -78,6 +78,7 @@ L'application est ensuite accessible sur `http://localhost:8000`. Le seeder cré
 - Recherche globale (projets et tâches, raccourci Cmd/Ctrl+K)
 - Pièces jointes multiples sur les tâches (10 max, 2 Mo/fichier, liste blanche de types, stockage privé)
 - Dépendances entre tâches (« bloque » / « est bloqué par »), avec détection des cycles et blocage du passage à « terminé » tant qu'une dépendance ne l'est pas
+- Charge de travail par membre : répartition des tâches par statut et tâches en retard, en plus des vues Kanban/Calendrier/Frise
 
 ### Prochaines étapes
 - Espaces de travail multiples

@@ -7,15 +7,16 @@ import { TaskKanbanBoard } from '@/components/kanban/task-kanban-board';
 import { TaskFormDialog } from '@/components/task/task-form-dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { TaskWorkloadView } from '@/components/workload/task-workload-view';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type SharedData, type Task } from '@/types';
-import { CalendarDays, GanttChart, LayoutGrid } from 'lucide-react';
+import { CalendarDays, GanttChart, Gauge, LayoutGrid } from 'lucide-react';
 
 type Option = { id: number; name: string };
 type ProjectOption = { id: number; name: string; members: Option[] };
 type Scope = 'mine' | 'all';
-type View = 'kanban' | 'calendar' | 'gantt';
+type View = 'kanban' | 'calendar' | 'gantt' | 'workload';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -122,6 +123,19 @@ export default function Dashboard({
                                 <GanttChart className="size-4" />
                                 Frise
                             </button>
+                            <button
+                                type="button"
+                                onClick={() => setView('workload')}
+                                className={cn(
+                                    'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm transition-colors',
+                                    view === 'workload'
+                                        ? 'bg-white shadow-xs dark:bg-neutral-700 dark:text-neutral-100'
+                                        : 'text-neutral-500 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-700/60',
+                                )}
+                            >
+                                <Gauge className="size-4" />
+                                Charge
+                            </button>
                         </div>
                         <Select
                             value={scope}
@@ -202,6 +216,7 @@ export default function Dashboard({
                         }}
                     />
                 )}
+                {view === 'workload' && <TaskWorkloadView tasks={tasks.data} />}
             </div>
 
             <TaskFormDialog

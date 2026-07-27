@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight, Flag, Folder, Link2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { STATUS_CHART_COLORS } from '@/lib/task-presentation';
+import { STATUS_CHART_COLORS, initial } from '@/lib/task-presentation';
 import { cn } from '@/lib/utils';
 import { type Task } from '@/types';
 
@@ -11,10 +11,6 @@ const DAY_OF_WEEK_LETTERS = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
 function parseDateKey(dateStr: string): Date {
     const [year, month, day] = dateStr.split('-').map(Number);
     return new Date(year, month - 1, day);
-}
-
-function initial(name: string): string {
-    return name.trim().charAt(0).toUpperCase() || '?';
 }
 
 type Row = { task: Task; clippedStartDay: number; clippedEndDay: number };
