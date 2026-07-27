@@ -38,6 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withSchedule(function (Schedule $schedule) {
         $schedule->command('tasks:notify-due-soon')->dailyAt('08:00');
+        $schedule->command('demo:reset')->dailyAt('04:00');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -76,6 +76,18 @@ L'application est ensuite accessible sur `http://localhost:8000`. Le seeder cré
 - Faire tourner le planificateur pour les rappels d'échéance : `php artisan schedule:work` (process persistant), ou une entrée cron `* * * * * php artisan schedule:run` sur le serveur.
 - `php artisan config:cache` et `php artisan route:cache` après tout changement de configuration.
 
+**Avec Docker** (`Dockerfile` + `docker-compose.yml` à la racine, indépendant de l'hébergeur — VPS, PaaS...) :
+
+```bash
+cp .env.example .env
+php artisan key:generate --show   # coller la valeur affichée dans APP_KEY sur la ligne suivante
+docker compose up -d --build
+```
+
+L'image build les assets front (étape Node) puis sert l'app via Apache ; au démarrage, le conteneur applique les migrations, régénère les caches config/route et crée le lien `storage` automatiquement (`docker/entrypoint.sh`). Un second service (`scheduler`) fait tourner `php artisan schedule:run` en boucle pour les rappels d'échéance. Toujours placer un reverse proxy devant (le conteneur écoute en HTTP simple sur le port 8080) pour le TLS, comme décrit ci-dessus.
+
+**Mode démo publique** : `DEMO_MODE=true` dans `.env` active la commande planifiée `demo:reset`, qui réinitialise les données (`migrate:fresh --seed`) chaque nuit — pour qu'une instance ouverte à tout le monde ne s'encrasse pas au fil des visites. Reste `false` par défaut ; à n'activer que sur une instance de démonstration, jamais un déploiement réel.
+
 ---
 
 ### Objectifs d'apprentissage
@@ -98,6 +110,7 @@ L'application est ensuite accessible sur `http://localhost:8000`. Le seeder cré
 - Content-Security-Policy avec nonce par requête (scripts Vite/Ziggy), X-Frame-Options, HSTS, redirection HTTPS automatique derrière un reverse proxy — actifs en production, sans impact sur le dev local
 - `composer audit`/`npm audit` en CI pour détecter les dépendances vulnérables à chaque push
 - Dépendances entre tâches : détection de cycles par parcours de graphe (BFS sur la table pivot `task_dependencies`), sans dépendance externe
+- Conteneurisation Docker (build multi-étapes Node → PHP/Apache), déployable tel quel sur n'importe quel hébergeur qui fait tourner des conteneurs
 
 ---
 

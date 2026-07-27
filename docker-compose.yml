@@ -1,0 +1,28 @@
+services:
+  app:
+    build: .
+    ports:
+      - '8080:80'
+    env_file: .env
+    volumes:
+      - horizon-storage:/var/www/html/storage
+      - horizon-database:/var/www/html/database
+    restart: unless-stopped
+
+  # Fait tourner le planificateur (rappels d'échéance, et demo:reset si
+  # DEMO_MODE=true) — même image, sans exposer de port.
+  scheduler:
+    build: .
+    depends_on:
+      - app
+    env_file: .env
+    volumes:
+      - horizon-storage:/var/www/html/storage
+      - horizon-database:/var/www/html/database
+    entrypoint: []
+    command: sh -c "while true; do php artisan schedule:run; sleep 60; done"
+    restart: unless-stopped
+
+volumes:
+  horizon-storage:
+  horizon-database:
