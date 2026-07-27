@@ -84,7 +84,7 @@ php artisan key:generate --show   # coller la valeur affichée dans APP_KEY sur 
 docker compose up -d --build
 ```
 
-L'image build les assets front (étape Node) puis sert l'app via Apache ; au démarrage, le conteneur applique les migrations, régénère les caches config/route et crée le lien `storage` automatiquement (`docker/entrypoint.sh`). Un second service (`scheduler`) fait tourner `php artisan schedule:run` en boucle pour les rappels d'échéance. Toujours placer un reverse proxy devant (le conteneur écoute en HTTP simple sur le port 8080) pour le TLS, comme décrit ci-dessus.
+L'image build les assets front (étape Node) puis sert l'app via nginx + PHP-FPM sur Alpine (supervisord fait tourner les deux dans le même conteneur, ~300 Mo au total) ; au démarrage, le conteneur applique les migrations, régénère les caches config/route et crée le lien `storage` automatiquement (`docker/entrypoint.sh`). Un second service (`scheduler`) fait tourner `php artisan schedule:run` en boucle pour les rappels d'échéance. Toujours placer un reverse proxy devant (le conteneur écoute en HTTP simple sur le port 8080) pour le TLS, comme décrit ci-dessus.
 
 **Mode démo publique** : `DEMO_MODE=true` dans `.env` active la commande planifiée `demo:reset`, qui réinitialise les données (`migrate:fresh --seed`) chaque nuit — pour qu'une instance ouverte à tout le monde ne s'encrasse pas au fil des visites. Reste `false` par défaut ; à n'activer que sur une instance de démonstration, jamais un déploiement réel.
 
@@ -110,7 +110,7 @@ L'image build les assets front (étape Node) puis sert l'app via Apache ; au dé
 - Content-Security-Policy avec nonce par requête (scripts Vite/Ziggy), X-Frame-Options, HSTS, redirection HTTPS automatique derrière un reverse proxy — actifs en production, sans impact sur le dev local
 - `composer audit`/`npm audit` en CI pour détecter les dépendances vulnérables à chaque push
 - Dépendances entre tâches : détection de cycles par parcours de graphe (BFS sur la table pivot `task_dependencies`), sans dépendance externe
-- Conteneurisation Docker (build multi-étapes Node → PHP/Apache), déployable tel quel sur n'importe quel hébergeur qui fait tourner des conteneurs — `php.ini-production`, OPcache réglé pour un code immuable (`validate_timestamps=0`), `expose_php` désactivé, `HEALTHCHECK` sur la route `/up`
+- Conteneurisation Docker (build multi-étapes Node → PHP-FPM/nginx sur Alpine, ~300 Mo), déployable tel quel sur n'importe quel hébergeur qui fait tourner des conteneurs — `php.ini-production`, OPcache réglé pour un code immuable (`validate_timestamps=0`), `expose_php` désactivé, `HEALTHCHECK` sur la route `/up`
 
 ---
 

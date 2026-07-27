@@ -6,12 +6,10 @@ WORKDIR /app
 COPY . .
 RUN npm ci && npm run build
 
-# --- Étape 2 : image PHP finale (Apache + mod_php) ---
-FROM php:8.4-apache AS app
+# --- Étape 2 : image PHP finale (Alpine + PHP-FPM + nginx) ---
+FROM php:8.4-fpm-alpine AS app
 
-RUN apt-get update && apt-get install -y --no-install-recommends unzip curl \
-    && a2enmod rewrite \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache nginx supervisor
 
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY docker/php-production.ini "$PHP_INI_DIR/conf.d/99-horizon.ini"
@@ -27,16 +25,14 @@ RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoload
     && touch database/database.sqlite \
     && chown -R www-data:www-data storage bootstrap/cache database
 
-RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/*.conf \
-    && sed -ri -e 's!/var/www/!/var/www/html/public/!g' /etc/apache2/apache2.conf \
-    && printf '<Directory /var/www/html/public>\n\tAllowOverride All\n</Directory>\n' >> /etc/apache2/apache2.conf
-
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=3s --start-period=20s --retries=3 \
-    CMD curl -f http://localhost/up || exit 1
+    CMD wget -qO- http://127.0.0.1/up || exit 1
 
 ENTRYPOINT ["entrypoint.sh"]
-CMD ["apache2-foreground"]
+CMD ["supervisord", "-c", "/etc/supervisord.conf"]
