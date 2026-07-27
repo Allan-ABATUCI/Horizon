@@ -1,7 +1,7 @@
 ### Le concept
 Une application web complète qui simplifie la gestion de projets pour les équipes. Interface intuitive et outils puissants pour planifier, suivre et livrer des projets efficacement.
 
-**Statut** : v1.0.0
+**Statut** : v1.1.0
 
 ---
 
