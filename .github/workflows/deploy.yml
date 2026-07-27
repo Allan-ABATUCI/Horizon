@@ -19,7 +19,7 @@ jobs:
           cd ~/Horizon
           git fetch origin main
           git reset --hard origin/main
-          docker compose up -d --build
+          docker compose up -d --build --wait
 
       - name: Vérifier que l'app répond
         run: curl -sf http://127.0.0.1:8080/up
