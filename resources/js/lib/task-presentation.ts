@@ -21,6 +21,10 @@ export const PRIORITY_DOT_COLORS: Record<TaskPriority, string> = {
     haute: '#e34948',
 };
 
+export function initial(name: string): string {
+    return name.trim().charAt(0).toUpperCase() || '?';
+}
+
 export function renderStatusIcon(status: string) {
     switch (status) {
         case 'en attente':
