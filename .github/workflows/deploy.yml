@@ -23,3 +23,29 @@ jobs:
 
       - name: Vérifier que l'app répond
         run: curl -sf http://127.0.0.1:8080/up
+
+      - name: Notifier Discord
+        if: always()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          STATUS: ${{ job.status }}
+          COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "DISCORD_WEBHOOK_URL non configuré (secret du dépôt) — notification ignorée."
+            exit 0
+          fi
+
+          if [ "$STATUS" = "success" ]; then
+            EMOJI="✅"
+            TEXT="déployé avec succès"
+          else
+            EMOJI="❌"
+            TEXT="échec du déploiement"
+          fi
+          SHORT_SHA="${COMMIT_SHA:0:7}"
+
+          curl -sf -H "Content-Type: application/json" \
+            -d "{\"content\": \"$EMOJI **Horizon** — $TEXT sur \`main\` (\`$SHORT_SHA\`)\\n$RUN_URL\"}" \
+            "$DISCORD_WEBHOOK_URL" || echo "Envoi de la notification Discord échoué."
