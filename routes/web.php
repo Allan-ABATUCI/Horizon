@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\ChecklistItemController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
@@ -38,6 +39,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/task/{task}/dependencies/candidates', [TaskDependencyController::class, 'candidates'])->name('task.dependencies.candidates');
         Route::post('/task/{task}/dependencies', [TaskDependencyController::class, 'store'])->name('task.dependencies.store');
         Route::delete('/task/{task}/dependencies/{dependsOn}', [TaskDependencyController::class, 'destroy'])->name('task.dependencies.destroy');
+        Route::post('/task/{task}/checklist-items', [ChecklistItemController::class, 'store'])->name('checklistItems.store');
+        Route::patch('/checklist-items/{checklistItem}', [ChecklistItemController::class, 'update'])->name('checklistItems.update');
+        Route::delete('/checklist-items/{checklistItem}', [ChecklistItemController::class, 'destroy'])->name('checklistItems.destroy');
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');

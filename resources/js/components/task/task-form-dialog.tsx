@@ -3,6 +3,7 @@ import { FormEventHandler, useEffect } from 'react';
 
 import InputError from '@/components/input-error';
 import { TaskAttachments } from '@/components/task/task-attachments';
+import { TaskChecklist } from '@/components/task/task-checklist';
 import { TaskComments } from '@/components/task/task-comments';
 import { TaskDependencies } from '@/components/task/task-dependencies';
 import { Button } from '@/components/ui/button';
@@ -267,6 +268,7 @@ export function TaskFormDialog({
                 {mode === 'edit' && task && (
                     <TaskDependencies taskId={task.id} dependsOn={task.depends_on} blocks={task.blocks} canEdit={canEditAllFields} />
                 )}
+                {mode === 'edit' && task && <TaskChecklist taskId={task.id} items={task.checklist_items} />}
                 {mode === 'edit' && task && <TaskAttachments taskId={task.id} currentUserId={currentUserId} />}
                 {mode === 'edit' && task && <TaskComments taskId={task.id} currentUserId={currentUserId} />}
             </DialogContent>

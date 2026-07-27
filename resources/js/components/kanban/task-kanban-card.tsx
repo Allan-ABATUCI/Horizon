@@ -1,6 +1,6 @@
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Trash2 } from 'lucide-react';
+import { ListChecks, Trash2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -64,6 +64,12 @@ export function TaskKanbanCard({
                     </TooltipTrigger>
                     <TooltipContent>Priorité : {task.priority}</TooltipContent>
                 </Tooltip>
+                {task.checklist_items.length > 0 && (
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <ListChecks className="size-3" />
+                        {task.checklist_items.filter((item) => item.is_done).length}/{task.checklist_items.length}
+                    </span>
+                )}
             </div>
             <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>{task.assigned_user.name}</span>

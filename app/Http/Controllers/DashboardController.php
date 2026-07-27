@@ -19,7 +19,7 @@ class DashboardController extends Controller
             ->whereHas('project.members', fn ($q) => $q->where('user_id', $userId))
             ->when($scope === 'mine', fn ($q) => $q->where(fn ($q2) => $q2->where('assigned_user_id', $userId)->orWhere('created_by', $userId)))
             ->when($request->filled('project_id'), fn ($q) => $q->where('project_id', $request->integer('project_id')))
-            ->with(['project', 'assignedUser', 'creator', 'editor', 'dependsOn', 'blocks'])
+            ->with(['project', 'assignedUser', 'creator', 'editor', 'dependsOn', 'blocks', 'checklistItems'])
             ->orderBy('end_date')
             ->get();
 
