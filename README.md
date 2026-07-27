@@ -12,6 +12,41 @@ Une application web complète qui simplifie la gestion de projets pour les équi
 
 ---
 
+### Architecture
+
+Pas d'API REST séparée : Inertia fait transiter les données entre Laravel et React sans exposer de couche JSON publique. L'autorisation passe systématiquement par une Policy avant d'atteindre un modèle.
+
+```mermaid
+flowchart LR
+    React["React 19"] <-- "Requêtes Inertia" --> MW
+
+    subgraph Laravel["Laravel 12"]
+        MW["Middleware<br/>(auth, CSP, HTTPS, throttle)"] --> Ctrl["Controllers"]
+        Ctrl --> FormReq["Form Requests<br/>(validation)"]
+        Ctrl --> Policy["Policies<br/>(autorisation par ressource)"]
+        Ctrl --> Model["Eloquent Models"]
+    end
+
+    Model --> DB[("SQLite<br/>+ FTS5")]
+```
+
+Modèle de données : un projet appartient à un créateur et a des membres (table pivot `project_user`, seule source de vérité pour la visibilité) ; une tâche peut dépendre d'autres tâches du même projet (`task_dependencies`).
+
+```mermaid
+erDiagram
+    USER ||--o{ PROJECT : crée
+    USER }o--o{ PROJECT : "membre (project_user)"
+    PROJECT ||--o{ TASK : contient
+    USER ||--o{ TASK : "assigné à"
+    TASK ||--o{ COMMENT : a
+    TASK ||--o{ ATTACHMENT : a
+    TASK ||--o{ CHECKLIST_ITEM : a
+    TASK }o--o{ TASK : "dépend de (task_dependencies)"
+    USER ||--o{ NOTIFICATION : reçoit
+```
+
+---
+
 ### Installation
 
 ```bash
