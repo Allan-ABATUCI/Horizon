@@ -1,44 +1,20 @@
-import { HTMLAttributes } from 'react';
+import { SVGAttributes } from 'react';
 
-// Même caractères et mêmes indentations relatives que le fichier fourni —
-// juste recadré sur le contenu visible (la marge vide autour ne servait
-// qu'à gâcher la place disponible une fois réduit aux petites tailles
-// utilisées dans l'app).
-const LOGO_ASCII = `  (&&&&&&&&                  &&&&&&&&&
-    &&&&&&                    &&&&&&&
-    &&&&                      .&&&&&&
-    &&&                       .&&&&&&
-    &&                        .&&&&&&
-    &     &                   .&&&&&&
-      &                       .&&&&&&
-                              .&&&&&&
-           &&&&&&&&&&&&&&&&&&&&&&&&&&
-    &&  *                     .&&&&&&
-   &  &                       .&&&&&&
-         &                    .&&&&&&
-        &&                    .&&&&&&
-       &&&                    .&&&&&&
-      &&&&                    .&&&&&&
-    &&&&&&                    .&&&&&&
-   &&&&&&&                    &&&&&&&
-&&&&&&&&&&&&&              &&&&&&&&&&&&&`;
-
-export default function AppLogoIcon({ className }: HTMLAttributes<HTMLElement>) {
+export default function AppLogoIcon(props: SVGAttributes<SVGElement>) {
     return (
-        <span className={className} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-            <pre
-                style={{
-                    margin: 0,
-                    fontFamily: "Consolas, 'BitstreamVeraSansMono', 'Courier New', Courier, monospace",
-                    fontSize: '4px',
-                    lineHeight: 1.15,
-                    letterSpacing: 0,
-                    color: 'currentColor',
-                    transform: 'scale(0.38)',
-                }}
-            >
-                {LOGO_ASCII}
-            </pre>
-        </span>
+        <svg {...props} viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">
+            {/* Dôme de la lanterne */}
+            <path d="M8.5 8Q12 3 15.5 8Z" />
+            {/* Chambre de la lanterne */}
+            <rect x="9" y="8" width="6" height="4.5" />
+            {/* Galerie (rebord) */}
+            <rect x="8" y="12.5" width="8" height="1" />
+            {/* Tour, bandes séparées par de fines bandes claires */}
+            <rect x="9" y="13.5" width="6" height="4.5" />
+            <rect x="9" y="19" width="6" height="5" />
+            <rect x="9" y="25" width="6" height="4" />
+            {/* Socle */}
+            <rect x="7" y="29" width="10" height="2" />
+        </svg>
     );
 }
