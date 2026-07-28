@@ -5,11 +5,30 @@ namespace App\Models;
 use Database\Factories\TaskFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Task extends Model
 {
     /** @use HasFactory<TaskFactory> */
     use HasFactory;
+
+    /**
+     * Les notifications (assignation, échéance) référencent une tâche via un
+     * task_id dans leur colonne JSON `data` — pas une vraie clé étrangère,
+     * la table notifications étant générique. cascadeOnDelete() ne peut donc
+     * pas s'en charger : on nettoie explicitement ici, à chaque suppression
+     * de tâche quel que soit le chemin emprunté (contrôleur, tinker, etc.),
+     * pour ne jamais laisser de notification pointer vers une tâche qui
+     * n'existe plus.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (Task $task) {
+            DB::table('notifications')
+                ->whereRaw("json_extract(data, '$.task_id') = ?", [$task->id])
+                ->delete();
+        });
+    }
 
     protected $fillable = [
         'name',

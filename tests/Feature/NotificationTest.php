@@ -9,6 +9,7 @@ use App\Notifications\TaskAssigned;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class NotificationTest extends TestCase
@@ -139,6 +140,51 @@ class NotificationTest extends TestCase
     public function test_guests_are_redirected_to_the_login_page()
     {
         $this->get('/notifications')->assertRedirect('/login');
+    }
+
+    public function test_deleting_a_task_removes_its_notifications()
+    {
+        $creator = User::factory()->create();
+        $assignee = User::factory()->create();
+        $project = $this->makeProject($creator);
+        $task = Task::factory()->create([
+            'project_id' => $project->id,
+            'created_by' => $creator->id,
+            'updated_by' => $creator->id,
+            'assigned_user_id' => $assignee->id,
+        ]);
+
+        $assignee->notify(new TaskAssigned($task));
+        $this->assertSame(1, $assignee->fresh()->notifications()->count());
+
+        $this->actingAs($creator)->delete("/task/{$task->id}");
+
+        $this->assertSame(0, $assignee->fresh()->notifications()->count());
+    }
+
+    public function test_orphaned_notifications_are_excluded_from_the_list()
+    {
+        $creator = User::factory()->create();
+        $assignee = User::factory()->create();
+        $project = $this->makeProject($creator);
+        $task = Task::factory()->create([
+            'project_id' => $project->id,
+            'created_by' => $creator->id,
+            'updated_by' => $creator->id,
+            'assigned_user_id' => $assignee->id,
+        ]);
+
+        $assignee->notify(new TaskAssigned($task));
+
+        // Simule une notification orpheline pré-existante (contournant le
+        // nettoyage du modèle) en supprimant la tâche directement en base,
+        // sans passer par Eloquent.
+        DB::table('tasks')->where('id', $task->id)->delete();
+
+        $response = $this->actingAs($assignee)->getJson('/notifications');
+
+        $response->assertOk();
+        $this->assertEmpty($response->json('data'));
     }
 
     public function test_a_user_cannot_mark_someone_elses_notification_as_read()
