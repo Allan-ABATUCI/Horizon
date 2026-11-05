@@ -13,7 +13,7 @@
         "fakerphp/faker": "^1.24",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^12.52",
-        "laravel/tinker": "^2.11",
+        "laravel/tinker": "^3.0",
         "tightenco/ziggy": "^2.6"
     },
     "require-dev": {
